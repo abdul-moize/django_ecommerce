@@ -1,0 +1,2 @@
+[MASTER]
+ignore = migrations, venv, .idea., __pycache__
