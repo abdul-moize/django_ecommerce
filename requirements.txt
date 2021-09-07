@@ -2,5 +2,5 @@ black==21.8b0
 Django==3.2.7
 flake8==3.9.2
 isort==5.9.3
-pycodestyle==2.7.0
+pylint==2.10.2
 djangorestframework==3.12.4
