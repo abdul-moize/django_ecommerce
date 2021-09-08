@@ -16,6 +16,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import CustomUser
+
 # pylint: disable= no-self-use, no-member
 
 
@@ -50,6 +51,8 @@ class LoginUser(APIView):
                 response["token"] = token.key
         except KeyError:
             response["message"] = "Bad Request"
+        except Http404:
+            response["message"] = "User does not exist"
 
         return Response(response)
 
