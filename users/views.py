@@ -1,35 +1,54 @@
+"""
+This module contains
+"""
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.http import HttpResponse
 from django.db.utils import IntegrityError
+from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.views import APIView
-import re
+
 from .models import CustomUser
+
 # Create your views here.
-
-
-def index(request):
-    return HttpResponse('worked')
+# pylint: disable= no-self-use
 
 
 class AddUser(APIView):
+    """
+    This is a post request to add a user to db
+    """
 
     def post(self, request):
-        response_message = ''
-
+        """
+        This function adds a user to db
+        Args:
+            request():
+        Returns:
+            (Response): a json object containing code and message
+        """
+        response = {}
         try:
-            name = request.POST['name']
-            email = request.POST['email']
-            password = request.POST['password']
-            if validate_password(password=password) and validate_email(email=email):
-                user = CustomUser(name=name, email=email, password=password)
-                validate_password(password)
-                user.save()
-                response_message = 'successfully created user'
+            name = request.POST["name"]
+            email = request.POST["email"]
+            password = request.POST["password"]
+            validate_password(password)
+            password = make_password(password)
+            validate_email(email)
+            user = CustomUser(name=name, email=email, password=password)
+            user.save()
+            response["message"] = "successfully created user"
+            response["code"] = status.HTTP_201_CREATED
         except KeyError:
-            response_message = 'Error. Try again'
+            response["message"] = "Error. Try again"
+            response["code"] = status.HTTP_400_BAD_REQUEST
         except IntegrityError:
-            response_message = 'Email already exists'
+            response["message"] = "Email already exists"
+            response["code"] = status.HTTP_409_CONFLICT
+        except ValidationError as error:
+            response["message"] = " ".join(error)
+            response["code"] = status.HTTP_400_BAD_REQUEST
 
-        return HttpResponse(response_message)
-
+        return Response(response)

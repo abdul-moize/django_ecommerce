@@ -1,2 +1,3 @@
 [MASTER]
+disable = too-few-public-methods
 ignore = migrations, venv, .idea., __pycache__

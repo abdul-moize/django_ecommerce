@@ -13,21 +13,22 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     """
     Custom user model
     """
-    email = models.EmailField(_('email address'), unique=True)
+
+    email = models.EmailField(_("email address"), unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
     name = models.CharField(max_length=50, blank=False)
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     objects = CustomUserManager()
 
     def __str__(self):
         """
-        Override default __str__ method
+        Override default __str__ method to return email
         Return:
             (str): Value containing email
         """
-        return self.email
+        return str(self.email)
