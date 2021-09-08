@@ -22,7 +22,7 @@ class CustomUserCreationForm(UserCreationForm):
 
 class CustomUserChangeForm(UserChangeForm):
     """
-    Modifies defualt user data change form
+    Modifies default user data change form
     """
 
     class Meta:
@@ -31,4 +31,4 @@ class CustomUserChangeForm(UserChangeForm):
         """
 
         model = CustomUser
-        fields = ("email", "name")
+        fields = ("password",)
