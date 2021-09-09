@@ -8,8 +8,26 @@ from django.utils.translation import gettext_lazy as _
 
 from .managers import CustomUserManager
 
+# pylint: disable = no-member
 
-class CustomUser(AbstractBaseUser, PermissionsMixin):
+
+class TimeStamp(models.Model):
+    """
+    TimeStamp model to check when the object was created and modified
+    """
+
+    created_on = models.DateTimeField(default=timezone.now())
+    updated_on = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        """
+        Tells that this class is abstract
+        """
+
+        abstract = True
+
+
+class CustomUser(AbstractBaseUser, PermissionsMixin, TimeStamp):
     """
     Custom user model
     """
@@ -17,11 +35,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_("email address"), unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    date_joined = models.DateTimeField(default=timezone.now)
     name = models.CharField(max_length=50, blank=False)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ["name"]
 
     objects = CustomUserManager()
 
@@ -29,6 +46,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         """
         Override default __str__ method to return email
         Return:
-            (str): Value containing email
+            (str): Value containing formatted id, name and email
         """
-        return str(self.email)
+        return ", ".join([self.id, self.name, self.email])

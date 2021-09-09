@@ -2,26 +2,22 @@
 Settings for admin site
 """
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin as DefaultAdmin
 
-from .forms import CustomUserChangeForm, CustomUserCreationForm
+# from .forms import CustomUserChangeForm, CustomUserCreationForm
+# pylint: disable = no-member, protected-access
 from .models import CustomUser
 
 
-class CustomUserAdmin(UserAdmin):
+class UserAdmin(DefaultAdmin):
     """
     This class modifies the default options of User model for admin site
     """
 
-    add_form = CustomUserCreationForm
-    form = CustomUserChangeForm
     model = CustomUser
-    list_display = (
-        "email",
-        "name",
-        "is_staff",
-        "is_active",
-    )
+    all_fields = [field.name for field in CustomUser._meta.fields]
+    all_fields.sort()
+    list_display = all_fields
     list_filter = (
         "email",
         "name",
@@ -52,4 +48,4 @@ class CustomUserAdmin(UserAdmin):
     ordering = ("email",)
 
 
-admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(CustomUser, UserAdmin)

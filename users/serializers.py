@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         """
-        Tells the models and what fields of the model to include in json object
+        Tells the models about which fields of the model to include in parsed response/request json.
         """
 
         model = CustomUser
