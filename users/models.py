@@ -15,7 +15,7 @@ class TimeStamp(models.Model):
     TimeStamp model to check when the object was created and modified
     """
 
-    created_on = models.DateTimeField(auto_now_add=True)
+    created_on = models.DateTimeField(auto_now_add=True, editable=False)
     updated_on = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -31,9 +31,13 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStamp):
     Customized user model for E-commerce app
     """
 
-    email = models.EmailField(_("email address"), unique=True)
-    is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    email = models.EmailField(_("email address"), unique=True, editable=False)
+    is_staff = models.BooleanField(
+        default=False, help_text="Is this user a staff member", blank=False, null=False
+    )
+    is_active = models.BooleanField(
+        default=True, help_text="Is this user active or disabled"
+    )
     name = models.CharField(max_length=50, blank=False)
 
     USERNAME_FIELD = "email"
@@ -47,4 +51,4 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStamp):
         Return:
             (str): Value containing formatted id, name and email
         """
-        return ", ".join([self.id, self.name, self.email])
+        return ", ".join([str(self.id), self.name, self.email])
