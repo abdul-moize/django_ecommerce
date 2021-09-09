@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import CustomUser
+from .models import User
 
 # pylint: disable= no-self-use, no-member
 
@@ -40,7 +40,7 @@ class LoginUser(APIView):
         try:
             email = request.POST["email"]
             password = request.POST["password"]
-            user = get_object_or_404(CustomUser, email=email)
+            user = get_object_or_404(User, email=email)
             if check_password(password, user.password):
                 response["message"] = "Logged in successfully"
                 response["code"] = status.HTTP_200_OK
@@ -78,7 +78,7 @@ class AddUser(APIView):
             validate_password(password)
             password = make_password(password)
             validate_email(email)
-            user = CustomUser(name=name, email=email, password=password)
+            user = User(name=name, email=email, password=password)
             user.save()
             response["message"] = "successfully created user"
             response["code"] = status.HTTP_201_CREATED
@@ -148,7 +148,7 @@ class DeleteUser(APIView):
         response = {}
         if user.is_superuser:
             try:
-                get_object_or_404(CustomUser, email=request.POST["email"]).delete()
+                get_object_or_404(User, email=request.POST["email"]).delete()
                 response["message"] = "User deleted successfully"
                 response["code"] = status.HTTP_200_OK
             except Http404:

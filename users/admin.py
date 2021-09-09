@@ -6,7 +6,7 @@ from django.contrib.auth.admin import UserAdmin as DefaultAdmin
 
 # from .forms import CustomUserChangeForm, CustomUserCreationForm
 # pylint: disable = no-member, protected-access
-from .models import CustomUser
+from .models import User
 
 
 class UserAdmin(DefaultAdmin):
@@ -14,8 +14,8 @@ class UserAdmin(DefaultAdmin):
     This class modifies the default options of User model for admin site
     """
 
-    model = CustomUser
-    all_fields = [field.name for field in CustomUser._meta.fields]
+    model = User
+    all_fields = [field.name for field in User._meta.fields]
     all_fields.sort()
     list_display = all_fields
     list_filter = (
@@ -44,8 +44,8 @@ class UserAdmin(DefaultAdmin):
             },
         ),
     )
-    search_fields = ("email",)
+    search_fields = ("email", "id", "name", "is_staff", "is_active")
     ordering = ("email",)
 
 
-admin.site.register(CustomUser, UserAdmin)
+admin.site.register(User, UserAdmin)

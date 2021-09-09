@@ -3,7 +3,7 @@ Converts Models into Json Objects
 """
 from rest_framework import serializers
 
-from .models import CustomUser
+from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -16,5 +16,5 @@ class UserSerializer(serializers.ModelSerializer):
         Tells the models about which fields of the model to include in parsed response/request json.
         """
 
-        model = CustomUser
+        model = User
         fields = ["email", "name", "is_ative", "is_staff", "date_joined"]

@@ -3,7 +3,7 @@ Holds the forms through which data will be added to db
 """
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 
-from .models import CustomUser
+from .models import User
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -16,7 +16,7 @@ class CustomUserCreationForm(UserCreationForm):
         Defines which model and fields to include in the form
         """
 
-        model = CustomUser
+        model = User
         fields = ("email", "name")
 
 
@@ -30,5 +30,5 @@ class CustomUserChangeForm(UserChangeForm):
         Defines which model and fields to include in the form
         """
 
-        model = CustomUser
+        model = User
         fields = ("password",)

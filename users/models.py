@@ -3,10 +3,9 @@ Holds database models
 """
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from .managers import CustomUserManager
+from .managers import UserManager
 
 # pylint: disable = no-member
 
@@ -16,7 +15,7 @@ class TimeStamp(models.Model):
     TimeStamp model to check when the object was created and modified
     """
 
-    created_on = models.DateTimeField(default=timezone.now())
+    created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -27,9 +26,9 @@ class TimeStamp(models.Model):
         abstract = True
 
 
-class CustomUser(AbstractBaseUser, PermissionsMixin, TimeStamp):
+class User(AbstractBaseUser, PermissionsMixin, TimeStamp):
     """
-    Custom user model
+    Customized user model for E-commerce app
     """
 
     email = models.EmailField(_("email address"), unique=True)
@@ -40,7 +39,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin, TimeStamp):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]
 
-    objects = CustomUserManager()
+    objects = UserManager()
 
     def __str__(self):
         """
