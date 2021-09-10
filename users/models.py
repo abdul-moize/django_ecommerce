@@ -6,14 +6,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from .managers import UserManager
-
 # pylint: disable = no-member
-
-
-class Role(models.Model):
-    """
-    Contains Role model
-    """
 
 
 class TimeStamp(models.Model):
