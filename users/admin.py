@@ -1,11 +1,10 @@
 """
 Settings for admin site
 """
+# pylint: disable = no-member, protected-access
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DefaultAdmin
 
-# from .forms import CustomUserChangeForm, CustomUserCreationForm
-# pylint: disable = no-member, protected-access
 from .models import User
 
 
@@ -15,9 +14,7 @@ class UserAdmin(DefaultAdmin):
     """
 
     model = User
-    all_fields = [field.name for field in User._meta.fields]
-    all_fields.sort()
-    list_display = all_fields
+    list_display = ["id", "email", "name", "is_staff", "created_on"]
     list_filter = (
         "email",
         "name",
@@ -25,7 +22,7 @@ class UserAdmin(DefaultAdmin):
         "is_active",
     )
     fieldsets = (
-        (None, {"fields": ("email", "password", "name")}),
+        (None, {"fields": ("email", "name", "password")}),
         ("Permissions", {"fields": ("is_staff", "is_active")}),
     )
     add_fieldsets = (
@@ -45,7 +42,7 @@ class UserAdmin(DefaultAdmin):
         ),
     )
     search_fields = ("email", "id", "name", "is_staff", "is_active")
-    ordering = ("email",)
+    ordering = ("id",)
 
 
 admin.site.register(User, UserAdmin)

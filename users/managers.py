@@ -19,6 +19,7 @@ class UserManager(BaseUserManager):
             raise ValueError(_("The Email must be set"))
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
+
         user.set_password(password)
         user.save()
         return user
@@ -27,10 +28,8 @@ class UserManager(BaseUserManager):
         """
         Create and save a SuperUser with the given email and password.
         """
-        extra_fields.setdefault("is_active", True)
+
         extra_fields["is_staff"] = True
         extra_fields["is_superuser"] = True
-
-        if extra_fields.get("is_active") is not False:
-            extra_fields["is_active"] = True
+        extra_fields["is_active"] = True
         return self.create_user(email, password, **extra_fields)

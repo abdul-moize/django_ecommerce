@@ -1,6 +1,7 @@
 """
 This module contains
 """
+# pylint: disable= no-self-use, no-member
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -8,24 +9,79 @@ from django.core.validators import validate_email
 from django.db.utils import IntegrityError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
+from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import User
 
-# pylint: disable= no-self-use, no-member
 
-
-class LoginUser(APIView):
+class UserSerializer(serializers.ModelSerializer):
     """
-    This api request logs a user in and returns a token
+    Serializer for the User model
+    """
+
+    class Meta:
+        """
+        Tells the models about which fields of the model to include in parsed response/request json.
+        """
+
+        model = User
+        fields = ["email", "name", "is_ative", "is_staff", "date_joined"]
+
+
+class UserAPI(APIView):
+    """
+    User Management API
+    post to add user
+    put to login user
+    patch to update user
+    delete to remove user
     """
 
     def post(self, request):
+        """
+        This function adds a user to db
+        Args:
+            request(HttpRequest): Value containing request data
+        Returns:
+            (Response): A json object containing message and code
+        """
+        response = {}
+        try:
+            name = request.POST["name"]
+            email = request.POST["email"].lower()
+            password = request.POST["password"]
+            validate_password(password)
+            validate_email(email)
+            unique_email = not User.objects.filter(email=email).exists()
+            valid_name = name not in ("", " ")
+            if valid_name and unique_email:
+                User.objects.create_user(email=email, password=password, name=name)
+                response["message"] = "Successfully created user."
+                response["code"] = status.HTTP_201_CREATED
+            else:
+                response["message"] = "Email already exists."
+                if not valid_name:
+                    response["message"] = "Name can not be blank."
+                response["code"] = status.HTTP_400_BAD_REQUEST
+        except KeyError:
+            response["message"] = "Required fields don't exist."
+            response["code"] = status.HTTP_400_BAD_REQUEST
+        except IntegrityError as integrity_error:
+            response["message"] = str(integrity_error)
+            response["code"] = status.HTTP_409_CONFLICT
+        except ValidationError as validation_error:
+            response["message"] = " ".join(validation_error)
+            response["code"] = status.HTTP_400_BAD_REQUEST
+
+        return Response(response)
+
+    def put(self, request):
         """
         This functions validates the credentials and logs a user in
         Args:
@@ -56,54 +112,9 @@ class LoginUser(APIView):
 
         return Response(response)
 
-
-class AddUser(APIView):
-    """
-    This is a post request to add a user to db
-    """
-
-    def post(self, request):
-        """
-        This function adds a user to db
-        Args:
-            request(HttpRequest): Value containing request data
-        Returns:
-            (Response): A json object containing message and code
-        """
-        response = {}
-        try:
-            name = request.POST["name"]
-            email = request.POST["email"]
-            password = request.POST["password"]
-            validate_password(password)
-            password = make_password(password)
-            validate_email(email)
-            user = User(name=name, email=email, password=password)
-            user.save()
-            response["message"] = "successfully created user"
-            response["code"] = status.HTTP_201_CREATED
-        except KeyError:
-            response["message"] = "Error. Try again"
-            response["code"] = status.HTTP_400_BAD_REQUEST
-        except IntegrityError:
-            response["message"] = "Email already exists"
-            response["code"] = status.HTTP_409_CONFLICT
-        except ValidationError as error:
-            response["message"] = " ".join(error)
-            response["code"] = status.HTTP_400_BAD_REQUEST
-
-        return Response(response)
-
-
-class UpdateUser(APIView):
-    """
-    Put request to update data of a user
-    """
-
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def put(self, request):
+    @authentication_classes(TokenAuthentication)
+    @permission_classes(IsAuthenticated)
+    def patch(self, request):
         """
         This function updates data of existing user
         Args:
@@ -127,16 +138,9 @@ class UpdateUser(APIView):
                 {"message": " ".join(error), "code": status.HTTP_400_BAD_REQUEST}
             )
 
-
-class DeleteUser(APIView):
-    """
-    Put request to delete a user from database
-    """
-
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def put(self, request):
+    @authentication_classes(TokenAuthentication)
+    @permission_classes(IsAuthenticated)
+    def delete(self, request):
         """
         This function deletes a user from database
         Args:

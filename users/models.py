@@ -1,5 +1,5 @@
 """
-Holds database models
+Models for the users app.
 """
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
@@ -8,6 +8,12 @@ from django.utils.translation import gettext_lazy as _
 from .managers import UserManager
 
 # pylint: disable = no-member
+
+
+class Role(models.Model):
+    """
+    Contains Role model
+    """
 
 
 class TimeStamp(models.Model):
@@ -20,7 +26,7 @@ class TimeStamp(models.Model):
 
     class Meta:
         """
-        Tells that this class is abstract
+        Defines the metadata of the class
         """
 
         abstract = True
@@ -31,14 +37,14 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStamp):
     Customized user model for E-commerce app
     """
 
-    email = models.EmailField(_("email address"), unique=True, editable=False)
+    email = models.EmailField(_("email address"), unique=True)
     is_staff = models.BooleanField(
         default=False, help_text="Is this user a staff member", blank=False, null=False
     )
     is_active = models.BooleanField(
-        default=True, help_text="Is this user active or disabled"
+        default=True, help_text="Active/Inactive status of a user"
     )
-    name = models.CharField(max_length=50, blank=False)
+    name = models.CharField(max_length=50, blank=False, null=False)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]
