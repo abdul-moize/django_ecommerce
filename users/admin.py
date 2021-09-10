@@ -22,7 +22,9 @@ class UserAdmin(DefaultAdmin):
         "is_active",
     )
     all_fields = [
-        field.name for field in User._meta.get_fields() if not field.auto_created
+        field.name
+        for field in User._meta.get_fields()
+        if not field.auto_created and field.name != "password"
     ]
     fieldsets = (
         (None, {"fields": all_fields}),
@@ -34,7 +36,7 @@ class UserAdmin(DefaultAdmin):
             None,
             {
                 "classes": ("wide",),
-                "fields": all_fields,
+                "fields": all_fields + ["password1", "password2"],
             },
         ),
     )
