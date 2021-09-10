@@ -15,7 +15,7 @@ class TimeStamp(models.Model):
     TimeStamp model to check when the object was created and modified
     """
 
-    created_on = models.DateTimeField(auto_now_add=True, editable=False)
+    created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
     class Meta:

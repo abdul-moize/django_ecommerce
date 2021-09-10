@@ -34,7 +34,44 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["email", "name", "is_ative", "is_staff", "date_joined"]
 
 
-class UserAPI(APIView):
+class LoginUser(APIView):
+    """
+    Logs a User and returns a Token
+    """
+
+    def post(self, request):
+        """
+        This functions validates the credentials and logs a user in
+        Args:
+            request(HttpRequest): Value containing request data
+        Returns:
+            (Response): A json object containing message, code and token
+        """
+        response = {
+            "message": "Wrong email or password",
+            "code": status.HTTP_400_BAD_REQUEST,
+        }
+        try:
+            email = request.POST["email"]
+            password = request.POST["password"]
+            user = get_object_or_404(User, email=email)
+            if check_password(password, user.password):
+                response["message"] = "Logged in successfully"
+                response["code"] = status.HTTP_200_OK
+                if not Token.objects.filter(user=user).exists():
+                    token = Token.objects.create(user=user)
+                else:
+                    token = Token.objects.get(user=user)
+                response["token"] = token.key
+        except KeyError:
+            response["message"] = "Bad Request"
+        except Http404:
+            response["message"] = "User does not exist"
+
+        return Response(response)
+
+
+class UserAPIView(APIView):
     """
     User Management API
     post to add user
@@ -81,37 +118,6 @@ class UserAPI(APIView):
 
         return Response(response)
 
-    def put(self, request):
-        """
-        This functions validates the credentials and logs a user in
-        Args:
-            request(HttpRequest): Value containing request data
-        Returns:
-            (Response): A json object containing message, code and token
-        """
-        response = {
-            "message": "Wrong email or password",
-            "code": status.HTTP_400_BAD_REQUEST,
-        }
-        try:
-            email = request.POST["email"]
-            password = request.POST["password"]
-            user = get_object_or_404(User, email=email)
-            if check_password(password, user.password):
-                response["message"] = "Logged in successfully"
-                response["code"] = status.HTTP_200_OK
-                if not Token.objects.filter(user=user).exists():
-                    token = Token.objects.create(user=user)
-                else:
-                    token = Token.objects.get(user=user)
-                response["token"] = token.key
-        except KeyError:
-            response["message"] = "Bad Request"
-        except Http404:
-            response["message"] = "User does not exist"
-
-        return Response(response)
-
     @authentication_classes(TokenAuthentication)
     @permission_classes(IsAuthenticated)
     def patch(self, request):
@@ -124,8 +130,22 @@ class UserAPI(APIView):
         """
         try:
             user = request.user
+            if "email" in request.POST:
+                email = request.POST["email"]
+                validate_email(email)
+                if not User.objects.filter(email=email).exists():
+                    user.email = request.POST["email"]
             if "name" in request.POST:
-                user.name = request.POST["name"]
+                name = request.POST["name"]
+                if name not in ["", " "]:
+                    user.name = name
+                else:
+                    return Response(
+                        {
+                            "message": "Name is not valid",
+                            "code": status.HTTP_400_BAD_REQUEST,
+                        }
+                    )
             if "password" in request.POST:
                 validate_password(request.POST["password"])
                 user.password = make_password(request.POST["password"])

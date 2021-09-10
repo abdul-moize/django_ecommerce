@@ -21,23 +21,20 @@ class UserAdmin(DefaultAdmin):
         "is_staff",
         "is_active",
     )
+    all_fields = [
+        field.name for field in User._meta.get_fields() if not field.auto_created
+    ]
     fieldsets = (
-        (None, {"fields": ("email", "name", "password")}),
-        ("Permissions", {"fields": ("is_staff", "is_active")}),
+        (None, {"fields": all_fields}),
+        (None, {"fields": []}),
     )
+    readonly_fields = ["created_on", "updated_on", "last_login"]
     add_fieldsets = (
         (
             None,
             {
                 "classes": ("wide",),
-                "fields": (
-                    "email",
-                    "name",
-                    "password1",
-                    "password2",
-                    "is_staff",
-                    "is_active",
-                ),
+                "fields": all_fields,
             },
         ),
     )
