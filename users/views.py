@@ -1,15 +1,14 @@
 """
 This module contains
 """
+from django.contrib.auth import get_user_model
+
 # pylint: disable= no-self-use, no-member
-from django.contrib.auth.hashers import check_password, make_password
-from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
-from django.db.utils import IntegrityError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from rest_framework import serializers, status
+from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import authentication_classes, permission_classes
@@ -17,26 +16,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import User
+from .permissions import IsAdmin
+from .serializers import UserSerializer
+
+USER = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserAuthenticationAPIView(APIView):
     """
-    Serializer for the User model
-    """
-
-    class Meta:
-        """
-        Tells the models about which fields of the model to include in parsed response/request json.
-        """
-
-        model = User
-        fields = ["email", "name", "is_ative", "is_staff", "date_joined"]
-
-
-class LoginUser(APIView):
-    """
-    Logs a User and returns a Token
+    Authenticates a user and returns a token
     """
 
     def post(self, request):
@@ -47,26 +35,34 @@ class LoginUser(APIView):
         Returns:
             (Response): A json object containing message, code and token
         """
-        response = {
-            "message": "Wrong email or password",
-            "code": status.HTTP_400_BAD_REQUEST,
-        }
         try:
             email = request.POST["email"]
             password = request.POST["password"]
-            user = get_object_or_404(User, email=email)
+            user = get_object_or_404(USER, email=email)
             if check_password(password, user.password):
-                response["message"] = "Logged in successfully"
-                response["code"] = status.HTTP_200_OK
-                if not Token.objects.filter(user=user).exists():
-                    token = Token.objects.create(user=user)
-                else:
-                    token = Token.objects.get(user=user)
-                response["token"] = token.key
+                token = Token.objects.get_or_create(user=user)
+                response = {
+                    "message": "Logged in successfully.",
+                    "status_code": status.HTTP_200_OK,
+                    "token": token[0].key,
+                    "email": user.email,
+                    "name": user.name,
+                }
+            else:
+                response = {
+                    "message": "Wrong email or password.",
+                    "status_code": status.HTTP_400_BAD_REQUEST,
+                }
         except KeyError:
-            response["message"] = "Bad Request"
+            response = {
+                "message": "Invalid Request.",
+                "status_code": status.HTTP_400_BAD_REQUEST,
+            }
         except Http404:
-            response["message"] = "User does not exist"
+            response = {
+                "message": "There was an error processing your request.",
+                "status_code": status.HTTP_400_BAD_REQUEST,
+            }
 
         return Response(response)
 
@@ -80,6 +76,9 @@ class UserAPIView(APIView):
     delete to remove user
     """
 
+    # authentication_classes = [TokenAuthentication]
+    # permission_classes = [IsAdmin]
+
     def post(self, request):
         """
         This function adds a user to db
@@ -90,36 +89,30 @@ class UserAPIView(APIView):
         """
         response = {}
         try:
-            name = request.POST["name"]
-            email = request.POST["email"].lower()
-            password = request.POST["password"]
-            validate_password(password)
-            validate_email(email)
-            unique_email = not User.objects.filter(email=email).exists()
-            valid_name = name not in ("", " ")
-            if valid_name and unique_email:
-                User.objects.create_user(email=email, password=password, name=name)
-                response["message"] = "Successfully created user."
-                response["code"] = status.HTTP_201_CREATED
-            else:
-                response["message"] = "Email already exists."
-                if not valid_name:
-                    response["message"] = "Name can not be blank."
-                response["code"] = status.HTTP_400_BAD_REQUEST
-        except KeyError:
-            response["message"] = "Required fields don't exist."
-            response["code"] = status.HTTP_400_BAD_REQUEST
-        except IntegrityError as integrity_error:
-            response["message"] = str(integrity_error)
-            response["code"] = status.HTTP_409_CONFLICT
+            serializer = UserSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "message": "User created successfully.",
+                        "status_code": status.HTTP_201_CREATED,
+                        "user_data": serializer.data,
+                    }
+                )
+            return Response(
+                {
+                    "message": serializer.errors,
+                    "status_code": status.HTTP_400_BAD_REQUEST,
+                }
+            )
         except ValidationError as validation_error:
             response["message"] = " ".join(validation_error)
-            response["code"] = status.HTTP_400_BAD_REQUEST
+            response["status_code"] = status.HTTP_400_BAD_REQUEST
 
         return Response(response)
 
-    @authentication_classes(TokenAuthentication)
-    @permission_classes(IsAuthenticated)
+    @authentication_classes([TokenAuthentication])
+    @permission_classes([IsAuthenticated])
     def patch(self, request):
         """
         This function updates data of existing user
@@ -128,38 +121,36 @@ class UserAPIView(APIView):
         Returns:
             (Response): A json object containing message and code
         """
+
         try:
-            user = request.user
-            if "email" in request.POST:
-                email = request.POST["email"]
-                validate_email(email)
-                if not User.objects.filter(email=email).exists():
-                    user.email = request.POST["email"]
-            if "name" in request.POST:
-                name = request.POST["name"]
-                if name not in ["", " "]:
-                    user.name = name
-                else:
-                    return Response(
-                        {
-                            "message": "Name is not valid",
-                            "code": status.HTTP_400_BAD_REQUEST,
-                        }
-                    )
-            if "password" in request.POST:
-                validate_password(request.POST["password"])
-                user.password = make_password(request.POST["password"])
-            user.save()
+            serializer = UserSerializer(request.user, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "message": "Changes updated successfully",
+                        "status_code": status.HTTP_200_OK,
+                        "new_data": serializer.data,
+                    }
+                )
+
             return Response(
-                {"message": "Changes updated successfully", "code": status.HTTP_200_OK}
+                {
+                    "message": serializer.errors,
+                    "status_code": status.HTTP_400_BAD_REQUEST,
+                    "data": serializer.data,
+                }
             )
         except ValidationError as error:
             return Response(
-                {"message": " ".join(error), "code": status.HTTP_400_BAD_REQUEST}
+                {
+                    "message": " ".join(error),
+                    "status_code": status.HTTP_400_BAD_REQUEST,
+                }
             )
 
-    @authentication_classes(TokenAuthentication)
-    @permission_classes(IsAuthenticated)
+    @authentication_classes([TokenAuthentication])
+    @permission_classes([IsAuthenticated & IsAdmin])
     def delete(self, request):
         """
         This function deletes a user from database
@@ -168,21 +159,16 @@ class UserAPIView(APIView):
         Returns:
             (Response): A json object containing message and code
         """
-        user = request.user
         response = {}
-        if user.is_superuser:
-            try:
-                get_object_or_404(User, email=request.POST["email"]).delete()
-                response["message"] = "User deleted successfully"
-                response["code"] = status.HTTP_200_OK
-            except Http404:
-                response["message"] = "No user exists with given email"
-                response["code"] = status.HTTP_400_BAD_REQUEST
-            except KeyError:
-                response["message"] = "No email provided"
-                response["code"] = status.HTTP_400_BAD_REQUEST
-        else:
-            response["message"] = "You don't have permission to delete user"
-            response["code"] = status.HTTP_403_FORBIDDEN
+        try:
+            get_object_or_404(USER, email=request.POST["email"]).delete()
+            response["message"] = "User deleted successfully"
+            response["status_code"] = status.HTTP_200_OK
+        except KeyError as key_error:
+            response["message"] = str(key_error)
+            response["status_code"] = status.HTTP_400_BAD_REQUEST
+        # else:
+        #     response["message"] = "You don't have permission to delete user"
+        #     response["status_code"] = status.HTTP_403_FORBIDDEN
 
         return Response(response)

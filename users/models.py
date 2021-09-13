@@ -39,7 +39,6 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStamp):
         default=True, help_text="Active/Inactive status of a user"
     )
     name = models.CharField(max_length=50, blank=False, null=False)
-
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]
 

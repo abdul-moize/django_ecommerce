@@ -2,6 +2,8 @@
 Contains Managers for models
 """
 from django.contrib.auth.base_user import BaseUserManager
+from django.contrib.auth.password_validation import validate_password
+from django.core.validators import validate_email
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -17,11 +19,15 @@ class UserManager(BaseUserManager):
         """
         if not email:
             raise ValueError(_("The Email must be set"))
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
-
-        user.set_password(password)
-        user.save()
+        validate_email(email.lower())
+        validate_password(password)
+        if extra_fields["name"] not in ["", " "]:
+            email = email.lower()
+            user = self.model(email=email, **extra_fields)
+            user.set_password(password)
+            user.save()
+        else:
+            raise ValueError(_("Name can not be blank"))
         return user
 
     def create_superuser(self, email, password, **extra_fields):
