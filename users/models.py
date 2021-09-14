@@ -24,6 +24,18 @@ class TimeStamp(models.Model):
         abstract = True
 
 
+class Role(TimeStamp):
+    """
+    Contains Roles of Models
+    """
+
+    name = models.CharField(max_length=30, unique=True)
+    code = models.CharField(max_length=2, unique=True)
+
+    def __str__(self):
+        return str(self.name)
+
+
 class User(AbstractBaseUser, PermissionsMixin, TimeStamp):
     """
     Customized user model for E-commerce app
@@ -40,6 +52,10 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStamp):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]
 
+    # pylint: disable=no-member
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, default=1)
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["name"]
     objects = UserManager()
 
     def __str__(self):

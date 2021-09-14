@@ -5,7 +5,7 @@ Settings for admin site
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DefaultAdmin
 
-from .models import User
+from .models import Role, User
 
 
 class UserAdmin(DefaultAdmin):
@@ -45,3 +45,4 @@ class UserAdmin(DefaultAdmin):
 
 
 admin.site.register(User, UserAdmin)
+admin.site.register(Role)
