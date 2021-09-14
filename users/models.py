@@ -7,8 +7,6 @@ from django.utils.translation import gettext_lazy as _
 
 from .managers import UserManager
 
-# pylint: disable = no-member
-
 
 class TimeStamp(models.Model):
     """
@@ -50,4 +48,5 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStamp):
         Return:
             (str): Value containing formatted id, name and email
         """
+        # pylint: disable=no-member
         return ", ".join([str(self.id), self.name, self.email])
