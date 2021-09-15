@@ -59,9 +59,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStamp):
     REQUIRED_FIELDS = ["name"]
 
     # pylint: disable=no-member
-    role = models.ForeignKey(Role, on_delete=models.SET_DEFAULT, default=1)
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["name"]
+    role = models.ForeignKey(Role, on_delete=models.PROTECT, default=1)
     objects = UserManager()
 
     def __str__(self):

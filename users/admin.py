@@ -14,13 +14,16 @@ class UserAdmin(DefaultAdmin):
     """
 
     model = User
-    list_display = ["id", "email", "name", "is_staff", "created_on", "updated_on"]
-    list_filter = (
+    list_display = [
+        "id",
         "email",
         "name",
         "is_staff",
-        "is_active",
-    )
+        "created_on",
+        "updated_on",
+        "role",
+    ]
+    list_filter = ("email", "name", "is_staff", "is_active", "role")
     all_fields = [
         field.name
         for field in User._meta.get_fields()
@@ -40,7 +43,7 @@ class UserAdmin(DefaultAdmin):
             },
         ),
     )
-    search_fields = ("email", "id", "name", "is_staff", "is_active")
+    search_fields = ("email", "id", "name", "is_staff", "is_active", "role")
     ordering = ("id",)
 
 
