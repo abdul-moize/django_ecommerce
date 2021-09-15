@@ -1,10 +1,13 @@
 """
 Contains Managers for models
 """
+# pylint: disable= no-member, cyclic-import
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import validate_email
 from django.utils.translation import ugettext_lazy as _
+
+import users.models
 
 
 class UserManager(BaseUserManager):
@@ -21,6 +24,9 @@ class UserManager(BaseUserManager):
             raise ValueError(_("The Email must be set"))
         validate_email(email.lower())
         validate_password(password)
+        extra_fields.setdefault(
+            "role", users.models.Role.objects.filter(code="CU").get()
+        )
         if extra_fields["name"] not in ["", " "]:
             email = email.lower()
             user = self.model(email=email, **extra_fields)
@@ -38,4 +44,5 @@ class UserManager(BaseUserManager):
         extra_fields["is_staff"] = True
         extra_fields["is_superuser"] = True
         extra_fields["is_active"] = True
+        extra_fields["role"] = users.models.Role.objects.filter(code="SA").get()
         return self.create_user(email, password, **extra_fields)

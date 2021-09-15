@@ -5,7 +5,7 @@ Settings for admin site
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DefaultAdmin
 
-from .models import User
+from .models import Role, User
 
 
 class UserAdmin(DefaultAdmin):
@@ -14,13 +14,16 @@ class UserAdmin(DefaultAdmin):
     """
 
     model = User
-    list_display = ["id", "email", "name", "is_staff", "created_on"]
-    list_filter = (
+    list_display = [
+        "id",
         "email",
         "name",
         "is_staff",
-        "is_active",
-    )
+        "created_on",
+        "updated_on",
+        "role",
+    ]
+    list_filter = ("email", "name", "is_staff", "is_active", "role")
     all_fields = [
         field.name
         for field in User._meta.get_fields()
@@ -40,8 +43,21 @@ class UserAdmin(DefaultAdmin):
             },
         ),
     )
-    search_fields = ("email", "id", "name", "is_staff", "is_active")
+    search_fields = ("email", "id", "name", "is_staff", "is_active", "role")
     ordering = ("id",)
 
 
+class RoleAdmin(admin.ModelAdmin):
+    """
+    Role admin settings
+    """
+
+    model = Role
+    list_display = ["id", "name", "code"]
+    list_filter = ["id", "name", "code"]
+    ordering = ("id",)
+    search_fields = ["name"]
+
+
 admin.site.register(User, UserAdmin)
+admin.site.register(Role, RoleAdmin)

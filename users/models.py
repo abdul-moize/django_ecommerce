@@ -2,9 +2,10 @@
 Models for the users app.
 """
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
-from django.db import models
+from django.db import OperationalError, models
 from django.utils.translation import gettext_lazy as _
 
+from .contants import SYSTEM_ADMIN
 from .managers import UserManager
 
 
@@ -24,6 +25,23 @@ class TimeStamp(models.Model):
         abstract = True
 
 
+class Role(TimeStamp):
+    """
+    Contains Roles of Models
+    """
+
+    name = models.CharField(max_length=30, unique=True)
+    code = models.CharField(max_length=2, unique=True)
+
+    def __str__(self):
+        return str(self.name)
+
+    def delete(self, *args, **kwargs):
+        if self.code == SYSTEM_ADMIN:
+            raise OperationalError(_("System Admin role cant be deleted"))
+        super().delete(*args, **kwargs)
+
+
 class User(AbstractBaseUser, PermissionsMixin, TimeStamp):
     """
     Customized user model for E-commerce app
@@ -40,6 +58,8 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStamp):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]
 
+    # pylint: disable=no-member
+    role = models.ForeignKey(Role, on_delete=models.PROTECT, default=1)
     objects = UserManager()
 
     def __str__(self):
