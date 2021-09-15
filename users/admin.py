@@ -14,7 +14,7 @@ class UserAdmin(DefaultAdmin):
     """
 
     model = User
-    list_display = ["id", "email", "name", "is_staff", "created_on"]
+    list_display = ["id", "email", "name", "is_staff", "created_on", "updated_on"]
     list_filter = (
         "email",
         "name",
@@ -44,5 +44,17 @@ class UserAdmin(DefaultAdmin):
     ordering = ("id",)
 
 
+class RoleAdmin(admin.ModelAdmin):
+    """
+    Role admin settings
+    """
+
+    model = Role
+    list_display = ["id", "name", "code"]
+    list_filter = ["id", "name", "code"]
+    ordering = ("id",)
+    search_fields = ["name"]
+
+
 admin.site.register(User, UserAdmin)
-admin.site.register(Role)
+admin.site.register(Role, RoleAdmin)

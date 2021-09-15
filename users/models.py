@@ -2,9 +2,10 @@
 Models for the users app.
 """
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
-from django.db import models
+from django.db import OperationalError, models
 from django.utils.translation import gettext_lazy as _
 
+from .contants import SYSTEM_ADMIN
 from .managers import UserManager
 
 
@@ -35,6 +36,11 @@ class Role(TimeStamp):
     def __str__(self):
         return str(self.name)
 
+    def delete(self, *args, **kwargs):
+        if self.code == SYSTEM_ADMIN:
+            raise OperationalError(_("System Admin role cant be deleted"))
+        super().delete(*args, **kwargs)
+
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStamp):
     """
@@ -53,7 +59,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStamp):
     REQUIRED_FIELDS = ["name"]
 
     # pylint: disable=no-member
-    role = models.ForeignKey(Role, on_delete=models.CASCADE, default=1)
+    role = models.ForeignKey(Role, on_delete=models.SET_DEFAULT, default=1)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]
     objects = UserManager()

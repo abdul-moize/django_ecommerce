@@ -2,6 +2,8 @@
 
 from django.db import migrations, models
 
+from users.contants import CONTENT_MANAGER, CUSTOMER, ROLES, SALES_MANAGER, SYSTEM_ADMIN
+
 
 def create_roles(apps, schema_editor):
     """
@@ -15,10 +17,10 @@ def create_roles(apps, schema_editor):
 
     roles = apps.get_model("users", "Role")
     name_code_list = [
-        ("Customer", "CU"),
-        ("Content Manager", "CM"),
-        ("System Admin", "SA"),
-        ("Sales Manager", "SM"),
+        (ROLES[CUSTOMER], CUSTOMER),
+        (ROLES[CONTENT_MANAGER], CONTENT_MANAGER),
+        (ROLES[SYSTEM_ADMIN], SYSTEM_ADMIN),
+        (ROLES[SALES_MANAGER], SALES_MANAGER),
     ]
     for role in name_code_list:
         name, code = role
