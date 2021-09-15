@@ -29,7 +29,8 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
+MEDIA_ROOT = "Media/"
+MEDIA_URL = "127.0.0.1:8000/media/"
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "users",
     "rest_framework.authtoken",
+    "products",
 ]
 
 MIDDLEWARE = [
