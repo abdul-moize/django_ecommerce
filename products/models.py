@@ -1,20 +1,21 @@
 """
 Models for the products app
 """
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from users.models import User
+from users.models import TimeStamp, User
 
 
-class TimeStamp(models.Model):
+class AuditTimeStamp(TimeStamp):
     """
     TimeStamp model for product class
     """
 
-    created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True, editable=False
+    )
 
     class Meta:
         """
@@ -24,23 +25,28 @@ class TimeStamp(models.Model):
         abstract = True
 
 
-class Product(TimeStamp):
+class Product(AuditTimeStamp):
     """
     Product model
     """
 
-    price = models.IntegerField(_("Product Price"))
-    quantity = models.IntegerField(_("Product Quantity"))
+    objects = models.Manager()
+    price = models.DecimalField(
+        _("Product Price"),
+        decimal_places=2,
+        help_text="Price is in PKR/Rs",
+        validators=[MinValueValidator(1)],
+        max_digits=10,
+    )
+    stock_quantity = models.PositiveIntegerField(_("Product Quantity"))
     description = models.CharField(
         _("Product Description"), max_length=1000, blank=True
     )
-    # image = models.ImageField(_("Product Image"))
-    price_unit = models.CharField(_("Currency"), max_length=3)
     name = models.CharField(_("Product Name"), max_length=100)
 
     def __str__(self):
         """
-        Overrides default __str__()
+        String representation of Product field
         Returns:
             (str): Value containing product name
         """

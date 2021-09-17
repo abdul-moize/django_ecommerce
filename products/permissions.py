@@ -13,16 +13,15 @@ class IsContentManager(BasePermission):
 
     def has_permission(self, request, view):
         """
-        True to grant permission
-        False to deny permission
+        Checks if the user has a specific permission or not
         Args:
-            request():
-            view():
+            request(HttpRequest): Value containing request data
+            view: Value containing view data
         Returns:
-            (bool):
+            (bool): True is a user has permission otherwise False.
         """
-        if request.user.is_superuser or request.user.is_staff:
-            return True
-        if request.user.role.code == CONTENT_MANAGER:
-            return True
-        return False
+        return (
+            request.user.is_superuser
+            or request.user.is_staff
+            or request.user.role.code == CONTENT_MANAGER
+        )

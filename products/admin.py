@@ -9,7 +9,7 @@ from products.models import Product
 
 class ProductAdmin(admin.ModelAdmin):
     """
-    Product admin
+    Admin representation of the Product model
     """
 
     # pylint: disable=no-member, protected-access
@@ -17,7 +17,7 @@ class ProductAdmin(admin.ModelAdmin):
     all_fields = [field.name for field in Product._meta.get_fields()]
     list_display = all_fields
 
-    list_filter = ["id", "name", "price", "quantity", "created_by"]
+    list_filter = ["id", "name", "created_by"]
     readonly_fields = ["created_on", "updated_on", "created_by"]
 
     def save_model(self, request, obj, form, change):
