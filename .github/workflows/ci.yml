@@ -34,7 +34,7 @@ jobs:
         isort . -c
     - name: Lint with Pylint
       run: |
-        pylint users/* django_ecommerce/* products/*
+        pylint users/* django_ecommerce/* products/* carts/*
     - name: Lint with black
       run: |
         black . --check

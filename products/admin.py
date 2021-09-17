@@ -18,6 +18,7 @@ class ProductAdmin(admin.ModelAdmin):
 
     list_filter = ["id", "name", "created_by"]
     readonly_fields = ["created_on", "updated_on", "created_by"]
+    ordering = ["id"]
 
     def save_model(self, request, obj, form, change):
         if obj.id is None:
