@@ -16,7 +16,7 @@ class IsContentManager(BasePermission):
         Checks if the user has a specific permission or not
         Args:
             request(HttpRequest): Value containing request data
-            view: Value containing view data
+            view(HttpView): Value containing view data
         Returns:
             (bool): True is a user has permission otherwise False.
         """
