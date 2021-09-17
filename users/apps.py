@@ -9,5 +9,4 @@ class UsersConfig(AppConfig):
     Defines app name and other settings
     """
 
-    default_auto_field = "django.db.models.BigAutoField"
     name = "users"
