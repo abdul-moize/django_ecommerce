@@ -39,7 +39,6 @@ class ProductViewSet(viewsets.ModelViewSet):
         Deletes a product from database
         Args:
             request(HttpRequest): Value containing Request data
-            pk(int): id(primary key) of product
         Returns:
             (dict): Value containing delete operation status
         """
