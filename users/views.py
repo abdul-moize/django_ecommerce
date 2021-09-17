@@ -116,7 +116,6 @@ class UserAPIView(APIView):
         Returns:
             (Response): A json object containing message and code
         """
-        print(request.user.is_authenticated)
         if request.user.is_authenticated:
             try:
                 serializer = UserSerializer(
