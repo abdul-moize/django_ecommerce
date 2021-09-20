@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .constants import OPEN, SUBMITTED
 from .serializers import Cart, CartItem, CartItemSerializer, CartSerializer
 
 
@@ -32,7 +33,7 @@ class CartsAPIView(APIView):
         """
         user = request.user
         try:
-            cart = get_object_or_404(Cart, user=user)
+            cart = get_object_or_404(Cart, user=user, status=OPEN)
         except Http404:
             cart_serializer = CartSerializer(data={"user": user.id})
             if cart_serializer.is_valid():
@@ -54,7 +55,9 @@ class CartsAPIView(APIView):
             return Response(
                 {
                     "message": "Product added to cart successfuly",
-                    "Cart details": CartSerializer(Cart.objects.get(user=user)).data,
+                    "Cart details": CartSerializer(
+                        Cart.objects.get(user=user, status=OPEN)
+                    ).data,
                     "CartItems": CartItemSerializer(
                         CartItem.objects.filter(cart=cart), many=True
                     ).data,
@@ -79,34 +82,71 @@ class CartsAPIView(APIView):
         Returns:
             (Response): Value containing information about operation status
         """
-        message = "Cart is empty"
         try:
-            cart = get_object_or_404(Cart, user=request.user)
+            carts = Cart.objects.filter(user=request.user)
             if item_pk:
-                message = "This item does not exist"
-                cart_item = get_object_or_404(CartItem, pk=item_pk)
+                cart = get_object_or_404(Cart, user=request.user, pk=item_pk)
                 return Response(
                     {
                         "message": "Item retrieved successfully.",
-                        "item": CartItemSerializer(cart_item).data,
+                        "cart_detail": CartSerializer(cart).data,
+                        "items": CartItemSerializer(
+                            cart.cart_items.all(), many=True
+                        ).data,
                         "status_code": status.HTTP_200_OK,
                     }
                 )
-            # cart.update_bill()
             return Response(
                 {
                     "message": "Items retrieved successfully.",
-                    "cart_details": CartSerializer(cart).data,
-                    "cart_items": CartItemSerializer(
-                        cart.cart_items.all(), many=True
-                    ).data,
+                    "cart_details": CartSerializer(carts, many=True).data,
                     "status_code": status.HTTP_200_OK,
                 }
             )
         except Http404:
             return Response(
                 {
-                    "message": f"{message}. Please add items to cart first.",
+                    "message": "Such cart does not exist",
+                    "status_code": status.HTTP_400_BAD_REQUEST,
+                }
+            )
+
+    def patch(self, request, item_pk):
+        """
+        Submits a cart
+        Args:
+            request():
+            item_pk(int):
+        Returns:
+            (Response):
+        """
+        if request.method != "PATCH":
+            return Response(
+                {
+                    "message": "Only PATCH request is allowed",
+                    "status_code": status.HTTP_400_BAD_REQUEST,
+                }
+            )
+        try:
+
+            cart = get_object_or_404(Cart, pk=item_pk)
+            if cart.cart_items:
+                cart.status = SUBMITTED
+                cart.save()
+                return Response(
+                    {
+                        "message": "Order submitted successfully",
+                        "status_code": status.HTTP_200_OK,
+                    }
+                )
+            return Response(
+                {"message": "Cart is empty", "status_code": status.HTTP_400_BAD_REQUEST}
+            )
+
+        except Http404:
+            return Response(
+                {
+                    "message": "Such cart does not exist",
                     "status_code": status.HTTP_400_BAD_REQUEST,
                 }
             )
@@ -121,7 +161,7 @@ class CartsAPIView(APIView):
             (Response): Value containing information about operation status
         """
         try:
-            cart = get_object_or_404(Cart, user=request.user)
+            cart = get_object_or_404(Cart, user=request.user, status=OPEN)
             data = request.data.copy()
             data["cart"] = cart.id
             cart_item = get_object_or_404(CartItem, pk=item_pk)
@@ -162,7 +202,7 @@ class CartsAPIView(APIView):
             (Response): Value containing information about operation status
         """
         try:
-            cart = get_object_or_404(Cart, user=request.user)
+            cart = get_object_or_404(Cart, user=request.user, status=OPEN)
             if item_pk:
                 data = request.data.copy()
                 data["cart"] = cart.id

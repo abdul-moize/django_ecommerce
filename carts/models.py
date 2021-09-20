@@ -7,6 +7,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from carts.constants import CART_STATUS, OPEN
 from products.models import AuditTimeStamp, Product
 from users.models import User
 
@@ -16,7 +17,8 @@ class Cart(AuditTimeStamp):
     Model class that represents Cart
     """
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="cart")
+    status = models.CharField(max_length=40, choices=CART_STATUS, default=OPEN)
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="cart")
     total_bill = models.DecimalField(
         _("Total Payable"),
         max_digits=20,
@@ -47,7 +49,7 @@ class CartItem(AuditTimeStamp):
     Model class that represents a CartItem
     """
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="+")
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_items")
     quantity = models.PositiveIntegerField(
         _("Product quantity to buy"), default=0, validators=(MinValueValidator(1),)
@@ -65,18 +67,18 @@ class CartItem(AuditTimeStamp):
         total += self.tax * total
         return total
 
-    def delete(self, using=None, keep_parents=False):
+    def delete(self, *args, **kwargs):
         """
         Updates bill whenever an item is deleted
         Args:
-            using(bool):
-            keep_parents(bool):
+            args(list): List containing arguments
+            kwargs(dict): Dictionary containing key value arguments
         Returns:
             None
         """
         # pylint: disable=no-member
         cart = self.cart
-        super().delete()
+        super().delete(*args, **kwargs)
         cart.update_bill()
 
     def save(self, *args, **kwargs):
