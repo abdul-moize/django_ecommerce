@@ -13,6 +13,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data["created_by"] = self.context["request"].user
+        # pylint: disable=no-member
         return Product.objects.create(**validated_data)
 
     class Meta:

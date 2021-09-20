@@ -13,10 +13,9 @@ from users.models import User
 
 class Cart(AuditTimeStamp):
     """
-    Cart model
+    Model class that represents Cart
     """
 
-    objects = models.Manager()
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="cart")
     total_bill = models.DecimalField(
         _("Total Payable"),
@@ -35,7 +34,7 @@ class Cart(AuditTimeStamp):
         # pylint: disable=no-member
         total = Decimal(0)
         for item in self.cart_items.all():
-            total += item.product.price * Decimal(item.quantity)
+            total += item.get_total()
         self.total_bill = Decimal(total)
         self.save()
 
@@ -45,15 +44,26 @@ class Cart(AuditTimeStamp):
 
 class CartItem(AuditTimeStamp):
     """
-    Cart item model
+    Model class that represents a CartItem
     """
 
-    objects = models.Manager()
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_items")
     quantity = models.PositiveIntegerField(
         _("Product quantity to buy"), default=0, validators=(MinValueValidator(1),)
     )
+    tax = Decimal(16 / 100)
+
+    def get_total(self):
+        """
+        Calculates and returns the total price of cart item
+        Returns:
+            (Decimal): Value containing total price of the cart item
+        """
+        # pylint: disable=no-member
+        total = self.product.price * Decimal(self.quantity)
+        total += self.tax * total
+        return total
 
     def __str__(self):
         """

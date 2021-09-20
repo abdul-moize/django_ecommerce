@@ -17,6 +17,20 @@ class AuditTimeStamp(TimeStamp):
         User, on_delete=models.CASCADE, null=True, editable=False, related_name="+"
     )
 
+    def save(self, *args, **kwargs):
+        """
+        Populates the created_by fields
+        Args:
+            args(list):
+            kwargs(dict):
+        Returns:
+            (models.Model):
+        """
+        # pylint: disable=no-member
+        if "created_by" in kwargs and self.created_by is None and self.id is None:
+            self.created_by = kwargs["created_by"]
+        super().save(*args, **kwargs)
+
     class Meta:
         """
         Defines the metadata of the class
@@ -30,7 +44,6 @@ class Product(AuditTimeStamp):
     Product model
     """
 
-    objects = models.Manager()
     price = models.DecimalField(
         _("Product Price"),
         decimal_places=2,

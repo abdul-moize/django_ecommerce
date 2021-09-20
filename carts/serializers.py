@@ -12,10 +12,6 @@ class CartSerializer(serializers.ModelSerializer):
     Cart model serializer
     """
 
-    def create(self, validated_data):
-        validated_data["created_by"] = validated_data["user"]
-        return Cart.objects.create(**validated_data)
-
     class Meta:
         """
         Tells the fields to include in parsed/json object
@@ -39,7 +35,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         Returns:
             (CartItem): Value containing created CartItem instance
         """
-        validated_data["created_by"] = validated_data["cart"].user
+        # pylint: disable=no-member
         filter_item = CartItem.objects.filter(
             product=validated_data["product"], cart=validated_data["cart"]
         )

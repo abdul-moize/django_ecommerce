@@ -21,9 +21,7 @@ class ProductAdmin(admin.ModelAdmin):
     ordering = ["id"]
 
     def save_model(self, request, obj, form, change):
-        if obj.id is None:
-            obj.created_by = request.user
-        obj.save()
+        obj.save(created_by=request.user)
 
 
 admin.site.register(Product, ProductAdmin)

@@ -15,7 +15,8 @@ from .serializers import Cart, CartItem, CartItemSerializer, CartSerializer
 
 class CartsAPIView(APIView):
     """
-    Carts API
+    Carts APIView allows a user to add to cart, update a cart item, remove a cart item,
+    view all or one cart item and clear all the cart items
     """
 
     authentication_classes = [TokenAuthentication]
@@ -35,13 +36,21 @@ class CartsAPIView(APIView):
         except Http404:
             cart_serializer = CartSerializer(data={"user": user.id})
             if cart_serializer.is_valid():
-                cart = cart_serializer.save()
+                cart = cart_serializer.save(created_by=user)
+            else:
+                return Response(
+                    {
+                        "message": "There was a problem adding product to cart",
+                        "status_code": status.HTTP_400_BAD_REQUEST,
+                        "errors": cart_serializer.errors,
+                    }
+                )
         data = request.data.copy()
         data["cart"] = cart.id
         data["created_by"] = user.id
         serializer = CartItemSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(created_by=user)
             cart.update_bill()
             return Response(
                 {
@@ -84,9 +93,11 @@ class CartsAPIView(APIView):
                         "status_code": status.HTTP_200_OK,
                     }
                 )
+            cart.update_bill()
             return Response(
                 {
                     "message": "Items retrieved successfully.",
+                    "cart_details": CartSerializer(cart).data,
                     "cart_items": CartItemSerializer(
                         cart.cart_items.all(), many=True
                     ).data,
@@ -115,7 +126,6 @@ class CartsAPIView(APIView):
             data = request.data.copy()
             data["cart"] = cart.id
             cart_item = get_object_or_404(CartItem, pk=item_pk)
-            print(cart_item)
             cart_item_serializer = CartItemSerializer(cart_item, data=data)
             if cart_item_serializer.is_valid():
                 cart_item_serializer.save()

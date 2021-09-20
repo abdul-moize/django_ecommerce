@@ -8,10 +8,17 @@ from .models import Cart, CartItem
 
 class CartAdmin(admin.ModelAdmin):
     """
-    Cart model admin
+    Admin representation of Cart model
     """
 
-    list_display = ["id", "user"]
+    list_display = [
+        "id",
+        "user",
+        "created_on",
+        "updated_on",
+        "created_by",
+        "total_bill",
+    ]
     list_filter = ["id", "user"]
     search_fields = ["id", "user"]
     ordering = ["id"]
@@ -35,17 +42,15 @@ class CartAdmin(admin.ModelAdmin):
         return [item.product.name for item in obj.cart_items.all()]
 
     def save_model(self, request, obj, form, change):
-        if obj.id is None:
-            obj.created_by = request.user
-        obj.save()
+        obj.save(created_by=request.user)
 
 
 class CartItemAdmin(admin.ModelAdmin):
     """
-    CartItem model admin
+    Admin representation of CartItem model
     """
 
-    list_display = ["id", "product", "cart"]
+    list_display = ["id", "product", "cart", "created_on", "updated_on", "created_by"]
     list_filter = ["id", "product", "cart"]
     search_fields = ["id", "product", "cart"]
     ordering = ["id"]
