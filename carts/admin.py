@@ -42,6 +42,7 @@ class CartAdmin(admin.ModelAdmin):
         return [item.product.name for item in obj.cart_items.all()]
 
     def save_model(self, request, obj, form, change):
+        print(obj)
         obj.save(created_by=request.user)
 
 

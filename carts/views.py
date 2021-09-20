@@ -111,14 +111,13 @@ class CartsAPIView(APIView):
                 }
             )
 
-    def patch(self, request, item_pk):
+    def patch(self, request):
         """
         Submits a cart
         Args:
-            request():
-            item_pk(int):
+            request(HttpRequest): Value containing request data
         Returns:
-            (Response):
+            (Response): Value containing operation status
         """
         if request.method != "PATCH":
             return Response(
@@ -129,16 +128,19 @@ class CartsAPIView(APIView):
             )
         try:
 
-            cart = get_object_or_404(Cart, pk=item_pk)
+            cart = get_object_or_404(Cart, user=request.user, status=OPEN)
             if cart.cart_items:
-                cart.status = SUBMITTED
-                cart.save()
-                return Response(
-                    {
-                        "message": "Order submitted successfully",
-                        "status_code": status.HTTP_200_OK,
-                    }
+                serializer = CartSerializer(
+                    cart, data={"status": SUBMITTED}, partial=True
                 )
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(
+                        {
+                            "message": "Order submitted successfully",
+                            "status_code": status.HTTP_200_OK,
+                        }
+                    )
             return Response(
                 {"message": "Cart is empty", "status_code": status.HTTP_400_BAD_REQUEST}
             )

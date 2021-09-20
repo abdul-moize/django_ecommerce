@@ -21,15 +21,15 @@ class AuditTimeStamp(TimeStamp):
         """
         Populates the created_by fields
         Args:
-            args(list):
-            kwargs(dict):
+            args(list): list containing different arguments
+            kwargs(dict): dictionary containing different key value arguments
         Returns:
-            (models.Model):
+            None
         """
         # pylint: disable=no-member
         if "created_by" in kwargs and self.created_by is None and self.id is None:
             self.created_by = kwargs["created_by"]
-        super().save(*args, **kwargs)
+        super().save(*args)
 
     class Meta:
         """

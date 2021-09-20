@@ -77,6 +77,8 @@ class CartItem(AuditTimeStamp):
             None
         """
         # pylint: disable=no-member
+        self.product.stock_quantity += self.quantity
+        self.product.save()
         cart = self.cart
         super().delete(*args, **kwargs)
         cart.update_bill()
