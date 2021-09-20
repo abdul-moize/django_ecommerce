@@ -65,6 +65,33 @@ class CartItem(AuditTimeStamp):
         total += self.tax * total
         return total
 
+    def delete(self, using=None, keep_parents=False):
+        """
+        Updates bill whenever an item is deleted
+        Args:
+            using(bool):
+            keep_parents(bool):
+        Returns:
+            None
+        """
+        # pylint: disable=no-member
+        cart = self.cart
+        super().delete()
+        cart.update_bill()
+
+    def save(self, *args, **kwargs):
+        """
+        Updates bill whenever an item is updated
+        Args:
+            args(list): list containing different arguments
+            kwargs(dict): dictionary containing different key value arguments
+        Returns:
+            None
+        """
+        # pylint: disable=no-member
+        super().save(*args, **kwargs)
+        self.cart.update_bill()
+
     def __str__(self):
         """
         Override default __str__() method

@@ -49,6 +49,10 @@ class CartItemSerializer(serializers.ModelSerializer):
         else:
             cart_item = CartItem.objects.create(**validated_data)
         cart_item.save()
+        cart = validated_data["cart"]
+        print(cart.total_bill)
+        validated_data["cart"].update_bill()
+        print(cart.total_bill)
         return cart_item
 
     def validate(self, attrs):

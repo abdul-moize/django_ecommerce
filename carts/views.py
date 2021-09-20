@@ -51,11 +51,10 @@ class CartsAPIView(APIView):
         serializer = CartItemSerializer(data=data)
         if serializer.is_valid():
             serializer.save(created_by=user)
-            cart.update_bill()
             return Response(
                 {
                     "message": "Product added to cart successfuly",
-                    "Cart details": CartSerializer(cart).data,
+                    "Cart details": CartSerializer(Cart.objects.get(user=user)).data,
                     "CartItems": CartItemSerializer(
                         CartItem.objects.filter(cart=cart), many=True
                     ).data,
@@ -93,7 +92,7 @@ class CartsAPIView(APIView):
                         "status_code": status.HTTP_200_OK,
                     }
                 )
-            cart.update_bill()
+            # cart.update_bill()
             return Response(
                 {
                     "message": "Items retrieved successfully.",
