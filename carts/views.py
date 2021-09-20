@@ -67,7 +67,7 @@ class CartsAPIView(APIView):
             {
                 "message": "There was a problem adding to cart",
                 "status_code": status.HTTP_400_BAD_REQUEST,
-                "errors": cart_serializer.errors,
+                "errors": serializer.errors,
             }
         )
 
