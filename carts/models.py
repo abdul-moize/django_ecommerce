@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 
 from carts.constants import CART_STATUS, OPEN
@@ -21,7 +22,7 @@ class Cart(AuditTimeStamp):
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="cart")
     total_bill = models.DecimalField(
         _("Total Payable"),
-        max_digits=20,
+        max_digits=10,
         validators=(MinValueValidator(1),),
         decimal_places=2,
         default=Decimal(0),
@@ -34,10 +35,9 @@ class Cart(AuditTimeStamp):
             None
         """
         # pylint: disable=no-member
-        total = Decimal(0)
-        for item in self.cart_items.all():
-            total += item.get_total()
-        self.total_bill = Decimal(total)
+        self.total_bill = self.cart_items.aggregate(total=Sum("item_total"))["total"]
+        if self.total_bill is None:
+            self.total_bill = 0
         self.save()
 
     def __str__(self):
@@ -52,20 +52,11 @@ class CartItem(AuditTimeStamp):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="+")
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_items")
     quantity = models.PositiveIntegerField(
-        _("Product quantity to buy"), default=0, validators=(MinValueValidator(1),)
+        _("Product quantity to buy"), default=1, validators=(MinValueValidator(1),)
     )
-    tax = Decimal(16 / 100)
-
-    def get_total(self):
-        """
-        Calculates and returns the total price of cart item
-        Returns:
-            (Decimal): Value containing total price of the cart item
-        """
-        # pylint: disable=no-member
-        total = self.product.price * Decimal(self.quantity)
-        total += self.tax * total
-        return total
+    item_total = models.PositiveIntegerField(
+        _("Total price of Cart Item"), validators=(MinValueValidator(1),), null=True
+    )
 
     def delete(self, *args, **kwargs):
         """
@@ -93,6 +84,7 @@ class CartItem(AuditTimeStamp):
             None
         """
         # pylint: disable=no-member
+        self.item_total = Decimal(self.quantity) * self.product.price
         super().save(*args, **kwargs)
         self.cart.update_bill()
 

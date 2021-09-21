@@ -32,20 +32,7 @@ class CartsAPIView(APIView):
             (Response): Value containing information about operation status
         """
         user = request.user
-        try:
-            cart = get_object_or_404(Cart, user=user, status=OPEN)
-        except Http404:
-            cart_serializer = CartSerializer(data={"user": user.id})
-            if cart_serializer.is_valid():
-                cart = cart_serializer.save(created_by=user)
-            else:
-                return Response(
-                    {
-                        "message": "There was a problem adding product to cart",
-                        "status_code": status.HTTP_400_BAD_REQUEST,
-                        "errors": cart_serializer.errors,
-                    }
-                )
+        cart = Cart.objects.get_or_create(user=user, status=OPEN, created_by=user)[0]
         data = request.data.copy()
         data["cart"] = cart.id
         data["created_by"] = user.id
@@ -167,8 +154,13 @@ class CartsAPIView(APIView):
             data = request.data.copy()
             data["cart"] = cart.id
             cart_item = get_object_or_404(CartItem, pk=item_pk)
+            quantity = cart_item.quantity
             cart_item_serializer = CartItemSerializer(cart_item, data=data)
             if cart_item_serializer.is_valid():
+                cart_item.product.stock_quantity += (
+                    quantity - cart_item_serializer.validated_data["quantity"]
+                )
+                cart_item.product.save()
                 cart_item_serializer.save()
                 return Response(
                     {
