@@ -10,12 +10,26 @@ from users.models import TimeStamp, User
 
 class AuditTimeStamp(TimeStamp):
     """
-    TimeStamp model for product class
+    TimeStamp model to check when the object was created and modified
     """
 
     created_by = models.ForeignKey(
-        User, on_delete=models.CASCADE, null=True, editable=False
+        User, on_delete=models.CASCADE, null=True, editable=False, related_name="+"
     )
+
+    def save(self, *args, **kwargs):
+        """
+        Populates the created_by fields
+        Args:
+            args(list): list containing different arguments
+            kwargs(dict): dictionary containing different key value arguments
+        Returns:
+            None
+        """
+        # pylint: disable=no-member
+        if "created_by" in kwargs and self.created_by is None and self.id is None:
+            self.created_by = kwargs["created_by"]
+        super().save(*args)
 
     class Meta:
         """
@@ -30,7 +44,6 @@ class Product(AuditTimeStamp):
     Product model
     """
 
-    objects = models.Manager()
     price = models.DecimalField(
         _("Product Price"),
         decimal_places=2,
