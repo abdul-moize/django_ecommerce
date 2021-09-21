@@ -1,18 +1,32 @@
 """
 This module contains
 """
-from django.contrib.auth import get_user_model
+import json
+
+from django.contrib.auth import authenticate, get_user_model, login
 
 # pylint: disable= no-self-use, no-member
 from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 from django.http import Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .contants import (
+    LOGIN,
+    LOGIN_CONTEXT,
+    LOGIN_FAILURE,
+    LOGIN_FAILURE_CONTEXT,
+    LOGIN_SUCCESS,
+    LOGIN_SUCCESS_CONTEXT,
+    REGISTER_FAILURE,
+    REGISTER_FAILURE_CONTEXT,
+    REGISTER_SUCCESS,
+    REGISTER_SUCCESS_CONTEXT,
+)
 from .permissions import IsAdmin
 from .serializers import UserSerializer
 
@@ -35,6 +49,13 @@ class UserAuthenticationAPIView(APIView):
         try:
             email = request.POST["email"]
             password = request.POST["password"]
+            if not request.META["HTTP_USER_AGENT"].startswith("Postman"):
+                user = authenticate(request, username=email, password=password)
+                if user:
+                    login(request, user)
+                    return render(request, LOGIN_SUCCESS, LOGIN_SUCCESS_CONTEXT)
+
+                return render(request, LOGIN_FAILURE, LOGIN_FAILURE_CONTEXT)
             user = get_object_or_404(User, email=email)
             if check_password(password, user.password):
                 token = Token.objects.get_or_create(user=user)
@@ -63,6 +84,14 @@ class UserAuthenticationAPIView(APIView):
 
         return Response(response)
 
+    def get(self, request):
+        """
+        Renders template of login/register page
+        Returns:
+            (render): Value containing template data to display
+        """
+        return render(request, LOGIN, LOGIN_CONTEXT)
+
 
 class UserAPIView(APIView):
     """
@@ -89,6 +118,8 @@ class UserAPIView(APIView):
             serializer = UserSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
+                if not request.META["HTTP_USER_AGENT"].startswith("Postman"):
+                    return render(request, REGISTER_SUCCESS, REGISTER_SUCCESS_CONTEXT)
                 return Response(
                     {
                         "message": "User created successfully.",
@@ -96,6 +127,10 @@ class UserAPIView(APIView):
                         "user_data": serializer.data,
                     }
                 )
+            if not request.META["HTTP_USER_AGENT"].startswith("Postman"):
+                context = REGISTER_FAILURE_CONTEXT
+                context["errors"] = json.dumps(serializer.errors, indent=4)
+                return render(request, REGISTER_FAILURE, context)
             return Response(
                 {
                     "message": serializer.errors,

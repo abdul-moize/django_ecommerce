@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+LOGIN_REDIRECT_URL = "/"
 # Application definition
 MEDIA_ROOT = "Media/"
 MEDIA_URL = "127.0.0.1:8000/media/"
