@@ -6,6 +6,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("", views.UserAPIView.as_view(), name="user_api"),
-    path("login/", views.UserAuthenticationAPIView.as_view(), name="login_api"),
+    path("users/", views.UserAPIView.as_view(), name="user_api"),
+    path("users/login/", views.UserAuthenticationAPIView.as_view(), name="login_api"),
+    path("", views.TemplateUserLogin.as_view(), name="template_login"),
+    path("register/", views.TemplateRegisterUser.as_view(), name="template_register"),
 ]
