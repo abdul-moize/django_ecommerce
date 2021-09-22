@@ -5,7 +5,11 @@
 .hero{
     height: 100%;
     width: 100%;
+<<<<<<< HEAD
     background-image: linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)), url(/static/images/banner.jpg);
+=======
+    background-image: linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)), url(banner.jpg);
+>>>>>>> refactor: seperate api and templates
     background-position: center;
     background-size: cover;
     position: absolute;
