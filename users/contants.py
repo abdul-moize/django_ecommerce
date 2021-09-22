@@ -24,4 +24,3 @@ REGISTER_PAGE_URL = "/"
 # Templates
 LOGIN = "login_register.html"
 REGISTER = "login_register.html"
-# Contexts

@@ -31,7 +31,8 @@ class TemplateUserLogin(APIView):
         Args:
             request(HttpRequest): Value containing request data
         Returns:
-            (Response): A json object containing message, code and token
+            (render or redirect):   redirects to homepage on success
+                                    otherwise renders the login page
         """
         context = {}
         try:
@@ -67,11 +68,11 @@ class TemplateRegisterUser(APIView):
 
     def post(self, request):
         """
-        Creates a new user
+        Creates a new user and redirect to login page
         Args:
-            request():
+            request(HttpRequest): Value containing request data
         Returns:
-
+            (render): Value containing template data to display
         """
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
