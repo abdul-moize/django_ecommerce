@@ -13,7 +13,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .contants import HOME_PAGE_URL, LOGIN, REGISTER
+from .contants import HOME_PAGE_URL
 from .permissions import IsAdmin
 from .serializers import UserSerializer
 
@@ -27,7 +27,7 @@ class TemplateUserLogin(APIView):
 
     def post(self, request):
         """
-        Validates and logs a user in
+        Authenticates a user and directs the browser to Home Page
         Args:
             request(HttpRequest): Value containing request data
         Returns:
@@ -45,10 +45,12 @@ class TemplateUserLogin(APIView):
                 login(request, user)
                 return redirect(HOME_PAGE_URL)
             context["error_message"] = "Invalid Credentials"
-            return render(request, LOGIN, context)
+            return render(request, "login_register.html", context)
         except KeyError:
-            context["error_message"] = "There was an error logging in."
-            return render(request, LOGIN, context)
+            context[
+                "error_message"
+            ] = "There was an error logging in, please try again."
+            return render(request, "login_register.html", context)
 
     def get(self, request):
         """
@@ -58,7 +60,7 @@ class TemplateUserLogin(APIView):
         """
         if request.user.is_authenticated:
             return redirect(HOME_PAGE_URL)
-        return render(request, LOGIN, {})
+        return render(request, "login_register.html", {})
 
 
 class TemplateRegisterUser(APIView):
@@ -68,7 +70,7 @@ class TemplateRegisterUser(APIView):
 
     def post(self, request):
         """
-        Creates a new user and redirect to login page
+        Registers a new user and redirect to login page
         Args:
             request(HttpRequest): Value containing request data
         Returns:
@@ -77,18 +79,20 @@ class TemplateRegisterUser(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            context = {"msg": "Registration Successful. Please log in now."}
-            return render(request, LOGIN, context)
+            context = {
+                "msg": "Your account has been created successfully, Please sign in"
+            }
+            return render(request, "login_register.html", context)
         errors = serializer.errors
         context = {}
         if "email" in errors:
-            context["email_error"] = ". ".join(errors["email"])
+            context["email_error"] = ", ".join(errors["email"])
         if "name" in errors:
-            context["name_error"] = ". ".join(errors["name"])
+            context["name_error"] = ", ".join(errors["name"])
         if "password" in errors:
             context["password_error"] = errors["password"]
         context["register"] = True
-        return render(request, REGISTER, context)
+        return render(request, "login_register.html", context)
 
 
 class UserAuthenticationAPIView(APIView):

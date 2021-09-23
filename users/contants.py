@@ -14,13 +14,6 @@ ROLES = {
     SALES_MANAGER: "Sales Manager",
     SYSTEM_ADMIN: "System Admin",
 }
-# form actions
-ACTION_LOGIN = "/"
-ACTION_REGISTER = "/register/"
 # urls
 HOME_PAGE_URL = "/admin/"
-LOGIN_PAGE_URL = "/"
-REGISTER_PAGE_URL = "/"
-# Templates
-LOGIN = "login_register.html"
-REGISTER = "login_register.html"
+AUTH_PAGE_URL = "/"
