@@ -72,11 +72,7 @@ class TemplateRegisterUser(APIView):
 
     def post(self, request):
         """
-<<<<<<< HEAD
         Registers a new user and redirect to login page
-=======
-        Creates a new user and redirect to login page
->>>>>>> docs: remove comment, fix docstrings
         Args:
             request(HttpRequest): Value containing request data
         Returns:

@@ -16,3 +16,4 @@ ROLES = {
 }
 # urls
 HOME_PAGE_URL = "/admin/"
+AUTH_PAGE_URL = "/"
