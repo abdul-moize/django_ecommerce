@@ -14,3 +14,6 @@ ROLES = {
     SALES_MANAGER: "Sales Manager",
     SYSTEM_ADMIN: "System Admin",
 }
+# urls
+HOME_PAGE_URL = "/admin/"
+AUTH_PAGE_URL = "/"

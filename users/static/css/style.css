@@ -1,0 +1,108 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+.hero{
+    height: 100%;
+    width: 100%;
+    background-image: linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)), url(/static/images/banner.jpg);
+    background-position: center;
+    background-size: cover;
+    position: absolute;
+}
+.form-box{
+    width: 380px;
+    height: 55%;
+    position: relative;
+    margin: 6% auto;
+    background: #fff;
+    padding: 5px;
+}
+.button-box{
+    width: 220px;
+    margin: 35px auto;
+    position: relative;
+    box-shadow: 0 0 20px 9px #ff61241f;
+    border-radius: 30px;
+}
+.toggle-btn{
+    padding: 10px 30px;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    outline: none;
+    position: relative;
+}
+#btn{
+    top: 0;
+    left: 0;
+    position: absolute;
+    width: 110px;
+    height: 100%;
+    background: linear-gradient(to right, #ff105f, #ffad06);
+    border-radius: 30px;
+    transition: .5s;
+}
+.input-group{
+    top: 180px;
+    position: absolute;
+    width: 280px;
+    transition: .5s;
+}
+.input-field{
+    width:100%;
+    padding: 10px 0;
+    margin: 5px 0;
+    outline: none;
+    border-top: 0;
+    border-left: 0;
+    background: transparent;
+}
+.submit-btn{
+    width: 85%;
+    padding: 10px 30px;
+    cursor: pointer;
+    display: block;
+    background: linear-gradient(to right, #ff105f, #ffad06);
+    border: 0;
+    outline: none;
+    border-radius: 30px;
+}
+.message{
+    background: linear-gradient(to right, #ff105f, #ffad06);
+    border-radius: 20px;
+    padding: 20px
+}
+.bubble{
+  background: linear-gradient(to right, #ff105f, #ffad06);
+  position: relative;
+  font-size: 18px;
+  line-height: 24px;
+  width: 300px;
+  border-radius: 40px;
+  padding: 24px;
+  text-align: center;
+  color: #000;
+}
+.bubble-bottom-left:before {
+  content: "";
+  width: 0px;
+  height: 0px;
+  position: relative;
+  border-left: 24px solid #ff105f;
+  border-right: 12px solid transparent;
+  border-top: 12px solid #ff105f;
+  border-bottom: 20px solid transparent;
+  left: 32px;
+  bottom: -24px;
+}
+.error{
+    color: red;
+    font-size: small;
+}
+#login-form{
+    left: 50px;
+}
+#register-form{
+    left: 50px;
+}

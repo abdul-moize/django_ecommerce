@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login and Registration</title>
+    <link rel="stylesheet" href={% static '/css/style.css' %}>
+    <script>
+        var is_register = "{{ register }}";
+    </script>
+</head>
+<body>
+    <div class="hero">
+        <div class="form-box">
+            <div class="button-box">
+                <div id="btn"></div>
+                <button class="toggle-btn" onclick="login()">Log In</button>
+                <button class="toggle-btn" onclick="register()">Register</button>
+            </div>
+            <form id="login-form" class="input-group" method="post" action={% url 'template_login' %}>
+                {% if msg %}<div class="message">{{ msg }}</div><br> {% endif %}
+                <input type="text" name="email" class="input-field" placeholder="Enter Email" required>
+                <input type="password" name="password" class="input-field" placeholder="Enter password" required>
+                {% if error_message %}<li class="error">{{ error_message }}</li>{% endif %}
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+            <form id="register-form" class="input-group" method="post" action={% url 'template_register' %} hidden>
+                <input type="text" name="email" class="input-field" placeholder="Enter Email" required>
+                {% if email_error %}<li class="error">{{email_error}}</li><br>{% endif %}
+                <input type="text" name="name" class="input-field" placeholder="Enter Name" required>
+                {% if name_error %}<li class="error">{{name_error}}</li><br>{% endif %}
+                <input type="password" name="password" class="input-field" placeholder="Enter password" required>
+                {% for msg in password_error %}
+                    <li class="error">{{ msg }} <br></li>
+                {% endfor %}
+                <button type="submit" class="submit-btn">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/auth.js"></script>
+</body>
+</html>

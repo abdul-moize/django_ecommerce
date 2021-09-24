@@ -1,22 +1,98 @@
 """
 This module contains
 """
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model, login
 
 # pylint: disable= no-self-use, no-member
 from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 from django.http import Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .contants import HOME_PAGE_URL
 from .permissions import IsAdmin
 from .serializers import UserSerializer
 
 User = get_user_model()
+
+
+class TemplateUserLogin(APIView):
+    """
+    Displays login page and allows user to login
+    """
+
+    def post(self, request):
+        """
+        Authenticates a user and directs the browser to Home Page
+        Args:
+            request(HttpRequest): Value containing request data
+        Returns:
+            (render or redirect):   redirects to homepage on success
+                                    otherwise renders the login page
+        """
+        context = {}
+        try:
+            user = authenticate(
+                request,
+                username=request.POST["email"],
+                password=request.POST["password"],
+            )
+            if user:
+                login(request, user)
+                return redirect(HOME_PAGE_URL)
+            context["error_message"] = "Invalid Credentials"
+            return render(request, "login_register.html", context)
+        except KeyError:
+            context[
+                "error_message"
+            ] = "There was an error logging in, please try again."
+            return render(request, "login_register.html", context)
+
+    def get(self, request):
+        """
+        Renders template of login/register page
+        Returns:
+            (render): Value containing template data to display
+        """
+        if request.user.is_authenticated:
+            return redirect(HOME_PAGE_URL)
+        return render(request, "login_register.html", {})
+
+
+class TemplateRegisterUser(APIView):
+    """
+    Adds a new user to database
+    """
+
+    def post(self, request):
+        """
+        Registers a new user and redirect to login page
+        Args:
+            request(HttpRequest): Value containing request data
+        Returns:
+            (render): Value containing template data to display
+        """
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            context = {
+                "msg": "Your account has been created successfully, Please sign in"
+            }
+            return render(request, "login_register.html", context)
+        errors = serializer.errors
+        context = {}
+        if "email" in errors:
+            context["email_error"] = ", ".join(errors["email"])
+        if "name" in errors:
+            context["name_error"] = ", ".join(errors["name"])
+        if "password" in errors:
+            context["password_error"] = errors["password"]
+        context["register"] = True
+        return render(request, "login_register.html", context)
 
 
 class UserAuthenticationAPIView(APIView):
