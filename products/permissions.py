@@ -20,7 +20,8 @@ class IsContentManager(BasePermission):
         Returns:
             (bool): True is a user has permission otherwise False.
         """
-        return (
+
+        return request.user.is_authenticated and (
             request.user.is_superuser
             or request.user.is_staff
             or request.user.role.code == CONTENT_MANAGER

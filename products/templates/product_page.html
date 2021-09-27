@@ -1,0 +1,100 @@
+{% extends "header.html" %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <title>{{ product.name }}'s Details</title>
+    <style>
+        .main-box{
+            background: white;
+            margin: 10px auto;
+            width: 90%;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .product-container{
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 100%;
+        }
+        .image-container{
+            padding: 10px;
+            width: 50%;
+            height: 90%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .product-image{
+            width: 100%;
+            height: 100%;
+        }
+        .product-info{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .name-field{
+            font-size:25px;
+            font-weight: 500;
+            margin: 10px;
+        }
+        .description-field{
+            margin: 10px;
+        }
+        .price-field{
+            color: green;
+            font-size 25px;
+            margin: 10px;
+        }
+        .add-to-cart{
+            background: #f57224;
+            border: 0;
+            color: white;
+            width: 200px;
+            height: 50px;
+            margin: 10px;
+        }
+        .value-field{
+            margin: 10px;
+            font-size: 20px;
+            width: 100px;
+        }
+        .error{
+            color: red;
+            margin: 10px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-box">
+        <div class="product-container">
+            <div class="image-container">
+                <img class="product-image" src="{{ product.image.url }}">
+            </div>
+            <div class="product-info">
+                <div class="name-field"> {{ product.name }} </div>
+                <div class="description-field"> {{ product.description }} </div>
+                <div class="price-field"> {{ product.get_price }} </div>
+                {% if "_auth_user_id" in request.session %}
+                <form class="product-info" method="post" action="">
+                    <input hidden name="product" value={{ product.id }}>
+                    <input class="value-field" type="number" name="quantity" min="1" max={{ product.stock_quantity }} step="1" value="1"><br>
+                    <button class="add-to-cart" type="submit">Add to cart</button>
+                </form>
+                {% else %}
+                <div class="error">Please <a href={% url 'template_login' %}>login</a> to buy this product</div>
+                {% endif %}
+            </div>
+        </div>
+
+
+
+
+    </div>
+
+</body>
+{% endblock %}

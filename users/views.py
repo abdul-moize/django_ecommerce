@@ -1,9 +1,7 @@
 """
 This module contains
 """
-import json
-
-from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import authenticate, get_user_model, login, logout
 
 # pylint: disable= no-self-use, no-member
 from django.contrib.auth.hashers import check_password
@@ -18,8 +16,21 @@ from rest_framework.views import APIView
 from .contants import HOME_PAGE_URL
 from .permissions import IsAdmin
 from .serializers import UserSerializer
+from .utils import is_logged_in
 
 User = get_user_model()
+
+
+def logout_user(request):
+    """
+    Logs out the user and redirects to homepage
+    Args:
+        request(HttpRequest): Value containing request data
+    Returns:
+        (redirect): Value containing redirection data
+    """
+    logout(request)
+    return redirect(HOME_PAGE_URL)
 
 
 class TemplateUserLogin(APIView):
@@ -45,6 +56,7 @@ class TemplateUserLogin(APIView):
             )
             if user:
                 login(request, user)
+
                 return redirect(HOME_PAGE_URL)
             context["error_message"] = "Invalid Credentials"
             return render(request, "login_register.html", context)
@@ -60,7 +72,7 @@ class TemplateUserLogin(APIView):
         Returns:
             (render): Value containing template data to display
         """
-        if request.user.is_authenticated:
+        if is_logged_in(request):
             return redirect(HOME_PAGE_URL)
         return render(request, "login_register.html", {})
 

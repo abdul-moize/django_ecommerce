@@ -18,6 +18,7 @@
                 <button class="toggle-btn" onclick="register()">Register</button>
             </div>
             <form id="login-form" class="input-group" method="post" action={% url 'template_login' %}>
+                {% csrf_token %}
                 {% if msg %}<div class="message">{{ msg }}</div><br> {% endif %}
                 <input type="text" name="email" class="input-field" placeholder="Enter Email" required>
                 <input type="password" name="password" class="input-field" placeholder="Enter password" required>
@@ -25,6 +26,7 @@
                 <button type="submit" class="submit-btn">Login</button>
             </form>
             <form id="register-form" class="input-group" method="post" action={% url 'template_register' %} hidden>
+                {% csrf_token %}
                 <input type="text" name="email" class="input-field" placeholder="Enter Email" required>
                 {% if email_error %}<li class="error">{{email_error}}</li><br>{% endif %}
                 <input type="text" name="name" class="input-field" placeholder="Enter Name" required>

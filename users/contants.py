@@ -15,5 +15,5 @@ ROLES = {
     SYSTEM_ADMIN: "System Admin",
 }
 # urls
-HOME_PAGE_URL = "/admin/"
+HOME_PAGE_URL = "/products/homepage/"
 AUTH_PAGE_URL = "/"
