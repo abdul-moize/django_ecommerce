@@ -99,7 +99,6 @@ class AddProductView(APIView):
             else None,
             "price_error": errors["price"] if "price" in errors else None,
         }
-        print(str(context["name_error"]))
         return render(request, ADD_PRODUCT, context)
 
 
