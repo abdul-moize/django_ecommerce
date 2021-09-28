@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import status
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,7 +17,6 @@ from rest_framework.views import APIView
 from .contants import HOME_PAGE_URL
 from .permissions import IsAdmin
 from .serializers import UserSerializer
-from .utils import is_logged_in
 
 User = get_user_model()
 
@@ -38,6 +38,8 @@ class TemplateUserLogin(APIView):
     Displays login page and allows user to login
     """
 
+    authentication_classes = [SessionAuthentication]
+
     def post(self, request):
         """
         Authenticates a user and directs the browser to Home Page
@@ -56,7 +58,6 @@ class TemplateUserLogin(APIView):
             )
             if user:
                 login(request, user)
-
                 return redirect(HOME_PAGE_URL)
             context["error_message"] = "Invalid Credentials"
             return render(request, "login_register.html", context)
@@ -72,7 +73,7 @@ class TemplateUserLogin(APIView):
         Returns:
             (render): Value containing template data to display
         """
-        if is_logged_in(request):
+        if request.user.is_authenticated:
             return redirect(HOME_PAGE_URL)
         return render(request, "login_register.html", {})
 

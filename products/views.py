@@ -9,6 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from users.contants import CONTENT_MANAGER, ROLES, SYSTEM_ADMIN
+
 from .constants import ADD_PRODUCT, HOMEPAGE, PRODUCT_PAGE
 from .models import Product
 from .permissions import IsContentManager
@@ -20,6 +22,8 @@ class ProductHomePageView(APIView):
     Renders the homepage of products
     """
 
+    authentication_classes = [SessionAuthentication]
+
     def get(self, request):
         """
         Renders the homepage template
@@ -28,7 +32,10 @@ class ProductHomePageView(APIView):
         Returns:
             (render): Value containing template data to display
         """
-        context = {"products": Product.objects.all()}
+        context = {
+            "products": Product.objects.all(),
+            "content_managers": [ROLES[CONTENT_MANAGER], ROLES[SYSTEM_ADMIN]],
+        }
         return render(request, HOMEPAGE, context)
 
 
@@ -36,6 +43,8 @@ class ProductView(APIView):
     """
     Render details of a product
     """
+
+    authentication_classes = [SessionAuthentication]
 
     def get(self, request, product_pk):
         """
