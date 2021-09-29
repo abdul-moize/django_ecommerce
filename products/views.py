@@ -9,9 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from users.contants import CONTENT_MANAGER, ROLES, SYSTEM_ADMIN
+from carts.views import CartsAPIView
 
-from .constants import ADD_PRODUCT, HOMEPAGE, PRODUCT_PAGE
 from .models import Product
 from .permissions import IsContentManager
 from .serializers import ProductSerializer
@@ -32,11 +31,14 @@ class ProductHomePageView(APIView):
         Returns:
             (render): Value containing template data to display
         """
+        is_content_manager = False
+        if IsContentManager().has_permission(request, None):
+            is_content_manager = True
         context = {
             "products": Product.objects.all(),
-            "content_managers": [ROLES[CONTENT_MANAGER], ROLES[SYSTEM_ADMIN]],
+            "can_manage_content": is_content_manager,
         }
-        return render(request, HOMEPAGE, context)
+        return render(request, "homepage.html", context)
 
 
 class ProductView(APIView):
@@ -56,7 +58,29 @@ class ProductView(APIView):
             (render):
         """
         context = {"product": get_object_or_404(Product, pk=product_pk)}
-        return render(request, PRODUCT_PAGE, context)
+        return render(request, "product_page.html", context)
+
+    def post(self, request, product_pk):
+        """
+        Adds a product to cart
+        request(HttpRequest): Value containing request data
+            product_pk(int): Value containing primary key of product to view
+        Returns:
+            (render): Value containing template data to display
+        """
+        response = CartsAPIView().post(request)
+        if response.status_code == status.HTTP_200_OK:
+            context = {
+                "product": get_object_or_404(Product, pk=product_pk),
+                "added_to_cart": "Product added to cart.",
+            }
+        else:
+            context = {
+                "product": get_object_or_404(Product, pk=product_pk),
+                "message": "There was a problem adding to cart. Please try again.",
+            }
+
+        return render(request, "product_page.html", context)
 
 
 class AddProductView(APIView):
@@ -75,7 +99,7 @@ class AddProductView(APIView):
         Returns:
             (render): Value containing template data to display
         """
-        return render(request, ADD_PRODUCT, {})
+        return render(request, "add_product.html", {})
 
     def post(self, request):
         """
@@ -89,7 +113,7 @@ class AddProductView(APIView):
         if serializer.is_valid():
             serializer.save()
             context = {"message": "Product created Successfully"}
-            return render(request, ADD_PRODUCT, context)
+            return render(request, "add_product.html", context)
 
         errors = serializer.errors
         context = {
@@ -99,7 +123,7 @@ class AddProductView(APIView):
             else None,
             "price_error": errors["price"] if "price" in errors else None,
         }
-        return render(request, ADD_PRODUCT, context)
+        return render(request, "add_product.html", context)
 
 
 class ProductViewSet(viewsets.ModelViewSet):

@@ -8,11 +8,9 @@
   <div class="header-right">
 
     {% if request.user.is_authenticated %}
-      {% for content_manager in content_managers %}
-        {% ifequal request.user.role|stringformat:"s" content_manager %}
-            <a class="active" href={% url 'add_product' %}>Add Product</a>
-        {% endifequal %}
-      {% endfor %}
+      {% if can_manage_content %}
+        <a class="active" href={% url 'add_product' %}>Add Product</a>
+      {% endif %}
         <a href="">Profile</a>
         <a href={% url 'logout' %}>Log Out</a>
     {% else %}

@@ -23,7 +23,11 @@
                 {% endif %}
                 <li class="product-box">
                     <a style="text-decoration-line: none;" href="{{product.id}}">
-                        <img class="product_image" src="{{ product.image.url }}" alt={{ product.name }}>
+                        {% if product.image  %}
+                            <img class="product_image" src="{{ product.image.url }}" alt={{ product.name }}>
+                        {% else %}
+                            <img class="product_image" src="/media/product_image.png" alt={{ product.name }}>
+                        {% endif %}
                         <div class="name">{{ product.name }}</div><br>
                         <div class="price">{{ product.get_price }}</div><br>
                     </a>

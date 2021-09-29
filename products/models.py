@@ -5,20 +5,9 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from products.constants import IMAGES_PATH
+from products.constants import DEFAULT_PRODUCT_IMAGE
+from products.utils import image_path
 from users.models import TimeStamp, User
-
-
-def image_path(instance, filename):
-    """
-    Returns the path to store the image file at
-    Args:
-        instance(Product): Value containing product data
-        filename(str): Value containing image filename
-    Returns:
-        (str): Value containing location to store file
-    """
-    return f"{IMAGES_PATH}{instance.name}_{filename}"
 
 
 class AuditTimeStamp(TimeStamp):
@@ -69,29 +58,43 @@ class Product(AuditTimeStamp):
         _("Product Description"), max_length=1000, blank=True
     )
 
-    image = models.ImageField(upload_to=image_path, default="default_image.png")
+    image = models.ImageField(upload_to=image_path, null=True)
     name = models.CharField(_("Product Name"), max_length=100)
 
     def get_price(self):
         """
-        Returns price with currency
+        Returns a formatted price with the currency of price
         Returns:
-            (str): Value containing price and currency
+            (str): Value containing formatted price and symbol of currency
         """
-        return f"Rs. {self.price}"
+        formatted_price = []
+        price = list(str(self.price))
+        decimal = price[-3:]
+        price = price[0:-3]
+        price.reverse()
+        for index, value in enumerate(price):
+            formatted_price += [value]
+            if (index + 1) % 3 == 0 and index < len(price) - 1:
+                formatted_price += [","]
+        formatted_price.reverse()
+        formatted_price += decimal
+        return f"Rs. {''.join(formatted_price)}"
 
     def save(self, *args, **kwargs):
         # pylint: disable=no-member
-        if self.id is not None:
-            product = Product.objects.get(id=self.id)
-            if product.image.name != "default_image.png":
+        if self.id is not None and self.image:
+            product = Product.objects.filter(id=self.id).first()
+            if (
+                product is not None
+                and product.image.name != DEFAULT_PRODUCT_IMAGE
+                and product.image.name != self.image.name
+            ):
                 product.image.delete(False)
-
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         # pylint: disable=no-member
-        if self.image.name != "default_image.png":
+        if self.image and self.image.name != DEFAULT_PRODUCT_IMAGE:
             self.image.delete(False)
         super().delete(*args, **kwargs)
 
