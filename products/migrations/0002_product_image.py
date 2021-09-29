@@ -18,7 +18,6 @@ class Migration(migrations.Migration):
             field=models.ImageField(
                 default="product_image.png",
                 null=True,
-                upload_to=products.utils.image_path,
             ),
         ),
     ]
