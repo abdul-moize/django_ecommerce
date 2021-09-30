@@ -84,6 +84,11 @@ class CartItem(AuditTimeStamp):
             None
         """
         # pylint: disable=no-member
+        self.product.stock_quantity -= self.quantity
+        if self.id is not None:
+            self.product.stock_quantity += CartItem.objects.get(id=self.id).quantity
+
+        self.product.save()
         self.item_total = Decimal(self.quantity) * self.product.price
         super().save(*args, **kwargs)
         self.cart.update_bill()

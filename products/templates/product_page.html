@@ -16,7 +16,7 @@
                 <div class="description-field"> {{ product.description }} </div>
                 <div class="price-field"> {{ product.get_price }} </div>
                 {% if "_auth_user_id" in request.session %}
-                <form class="product-info" method="get" action="">
+                <form class="product-info" method="post" action="">
                     {% csrf_token %}
                     <input hidden name="product" value={{ product.id }}>
                     <input class="value-field" type="number" name="quantity" min="1" max={{ product.stock_quantity }} step="1" value="1"><br>

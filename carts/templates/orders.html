@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+{% extends "header.html" %}
+<html lang="en">
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <title>Orders</title>
+    <link rel="stylesheet" href="/static/css/orders.css">
+    <style>
+
+    </style>
+</head>
+<body>
+    <div class="main-box">
+        {% if error_message %}
+            <div class="error">{{ error_message }}</div>
+        {% else %}
+            <div class="orders-container">
+                {% for cart in carts %}
+                    Order #{{ forloop.counter }}
+                        {% for cart_item in cart.cart_items.all %}
+                        <div class="order-container">
+                            <img class="image-field" src={{ cart_item.product.image.url }}>
+                            <div class="name-field">{{ cart_item.product.name }}</div>
+                            <div class="quantity-field">Quantity: <input style="width: 50px;" readonly value="{{ cart_item.quantity }}"></div>
+                        </div>
+                        {% endfor %}
+
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+{% endblock %}
+</html>

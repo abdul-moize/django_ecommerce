@@ -1,0 +1,44 @@
+{% extends "header.html" %}
+{% block content %}
+<head xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+    <meta charset="UTF-8">
+    <title>Cart Detail</title>
+    <link rel="stylesheet" href="/static/css/cart_detail.css">
+</head>
+<body>
+    <div class="main-box">
+        <div class="cart-item-container">
+            {% if error_message %}
+                {{ error_message }}
+            {% else %}
+            <div class="main-message">Cart Details</div>
+            <form class="form-box" method="post" action="">
+                {% for cart_item  in cart_items %}
+                    <div class="cart-item-box">
+                        <img class="image-tag" src={{ cart_item.product.image.url }}>
+                        <div class="name-field">{{ cart_item.product.name }}</div>
+                        {% csrf_token %}
+                        <input hidden type="number" value={{cart_item.product.id}} name="product">
+                        <input class="quantity-field" type="number" step="1" name="quantity" min="1" max="{{cart_item.product.stock_quantity}}" value="{{cart_item.quantity}}">
+                        <button class="remove-button" type="button" onclick="remove_div({{ cart_item.id }})" >
+                            <img class="remove-image" src="/media/trash.png">
+                        </button>
+                    </div>
+                {% endfor %}
+                    <label class="container">
+                        Save Changes
+                        <input type="radio" name="is_checkout" value="false">
+                        <span class="checkmark"></span>
+                    </label>
+                    <label class="container">Checkout
+                        <input type="radio" name="is_checkout" value="true" checked>
+                        <span class="checkmark"></span>
+                    </label>
+                <button class="submit-btn" type="submit" >Submit</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    <script src="/static/js/cart_detail.js"></script>
+</body>
+{% endblock %}
