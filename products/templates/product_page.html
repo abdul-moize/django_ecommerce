@@ -1,0 +1,32 @@
+{% extends "header.html" %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <title>{{ product.name }}'s Details</title>
+    <link rel="stylesheet" href="/static/css/product_page.css">
+</head>
+<body>
+    <div class="main-box">
+        <div class="product-container">
+            <div class="image-container">
+                <img class="product-image" src="{{ product.image.url }}">
+            </div>
+            <div class="product-info">
+                <div class="name-field"> {{ product.name }} </div>
+                <div class="description-field"> {{ product.description }} </div>
+                <div class="price-field"> {{ product.get_price }} </div>
+                {% if "_auth_user_id" in request.session %}
+                <form class="product-info" method="get" action="">
+                    {% csrf_token %}
+                    <input hidden name="product" value={{ product.id }}>
+                    <input class="value-field" type="number" name="quantity" min="1" max={{ product.stock_quantity }} step="1" value="1"><br>
+                    <button class="add-to-cart" type="submit">Add to cart</button>
+                </form>
+                {% else %}
+                <div class="error">Please <a href={% url 'template_login' %}>login</a> to buy this product</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+{% endblock %}

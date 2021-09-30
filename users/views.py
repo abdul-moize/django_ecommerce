@@ -1,7 +1,7 @@
 """
 This module contains
 """
-from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import authenticate, get_user_model, login, logout
 
 # pylint: disable= no-self-use, no-member
 from django.contrib.auth.hashers import check_password
@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import status
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,10 +21,24 @@ from .serializers import UserSerializer
 User = get_user_model()
 
 
+def logout_user(request):
+    """
+    Logs out the user and redirects to homepage
+    Args:
+        request(HttpRequest): Value containing request data
+    Returns:
+        (redirect): Value containing redirection data
+    """
+    logout(request)
+    return redirect(HOME_PAGE_URL)
+
+
 class TemplateUserLogin(APIView):
     """
     Displays login page and allows user to login
     """
+
+    authentication_classes = [SessionAuthentication]
 
     def post(self, request):
         """

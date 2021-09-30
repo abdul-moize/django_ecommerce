@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+{% extends "header.html" %}
+
+<html lang="en">
+{% block content %}
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <title>Homepage</title>
+    <link rel="stylesheet" href="/static/css/homepage.css">
+
+</head>
+
+<body>
+    <div class="main-container">
+        <img class="image" src="/static/images/banner.png" >
+        <div class="products-container">
+            <ul class="products-box">
+            {% for product in products %}
+                {% if forloop.counter0|divisibleby:4 %}
+                    </ul>
+                    <ul class="products-box">
+                {% endif %}
+                <li class="product-box">
+                    <a style="text-decoration-line: none;" href="{{product.id}}">
+                        {% if product.image  %}
+                            <img class="product_image" src="{{ product.image.url }}" alt={{ product.name }}>
+                        {% else %}
+                            <img class="product_image" src="/media/product_image.png" alt={{ product.name }}>
+                        {% endif %}
+                        <div class="name">{{ product.name }}</div><br>
+                        <div class="price">{{ product.get_price }}</div><br>
+                    </a>
+                </li><br>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+{% endblock %}

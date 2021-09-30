@@ -9,4 +9,9 @@ from products import views
 router = DefaultRouter()
 router.register(r"", views.ProductViewSet)
 
-urlpatterns = [path("", include(router.urls))]
+urlpatterns = [
+    path("", views.ProductHomePageView.as_view(), name="homepage"),
+    path("<int:product_pk>/", views.ProductView.as_view(), name="homepage"),
+    path("add/", views.AddProductView.as_view(), name="add_product"),
+    path("api/", include(router.urls), name="product_api"),
+]

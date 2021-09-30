@@ -1,0 +1,39 @@
+body{
+            background: #dadada;
+        }
+        .main-container{
+            width: 90%;
+            margin: auto;
+        }
+        .products-container{
+            background: white;
+        }
+        .products-box{
+            display: flex;
+            text-decoration-line: none;
+            background: white;
+        }
+        .product-box{
+            list-style: none;
+            padding: 10px;
+            margin: 30px;
+            width: 250px;
+        }
+        .price{
+            color: green;
+            text-decoration-line: none;
+            font-weight: 400;
+        }
+        .name{
+            color: black;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .image{
+            width: 100%;
+        }
+        .product_image{
+            width: 100%;
+            height: 200px;
+        }

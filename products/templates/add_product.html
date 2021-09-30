@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends "header.html" %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <title>Add a Product</title>
+    <link rel="stylesheet" href="/static/css/add_product.css">
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-box">
+            <div class="message">{% if message %} {{ message }} {% else %} Add Product {% endif %}</div>
+            <form class="product-form" method="post" action="" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="labels">
+                    <div class="row">
+                        <div class="field-name">Name:</div>
+                        <input type="text" class="input-field" name="name" placeholder="Enter Name" required>
+                    </div>
+                    <div class="error"> {% if name_error %}{{ name_error }}{% endif %} </div>
+                    <div class="row">
+                        <div class="field-name">Quantity:</div>
+                        <input type="number" class="input-field" name="stock_quantity" placeholder="Enter Quantity" required>
+                    </div>
+                    <div class="error"> {% if quantity_error %}{{ quantity_error }}{% endif %} </div>
+                    <div class="row">
+                        <div class="field-name">Price:</div>
+                        <input type="number" class="input-field" name="price" placeholder="Enter Price" required>
+
+                    </div>
+                    <div class="error"> {% if price_error %}{{ price_error }}{% endif %} </div>
+                    <div class="row">
+                        <div class="field-name">Description:</div>
+                        <textarea name="description" class="input-field" placeholder="Enter Description"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="field-name">Image:</div>
+                        <input type="file" class="file-field" name="image" placeholder="Product Picture" accept=".jpg, .png">
+                    </div>
+                </div>
+                <button class="button" type="submit">Add Product</button>
+            </form>
+        </div>
+    </div>
+</body>
+{% endblock %}
+</html>
