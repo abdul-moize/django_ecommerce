@@ -29,9 +29,11 @@ class AuditTimeStamp(TimeStamp):
             None
         """
         # pylint: disable=no-member
-        if "created_by" in kwargs and self.created_by is None and self.id is None:
-            self.created_by = kwargs["created_by"]
-        super().save(*args)
+        if "created_by" in kwargs:
+            if self.created_by is None and self.id is None:
+                self.created_by = kwargs["created_by"]
+            del kwargs["created_by"]
+        super().save(*args, **kwargs)
 
     class Meta:
         """
@@ -58,7 +60,7 @@ class Product(AuditTimeStamp):
         _("Product Description"), max_length=1000, blank=True
     )
 
-    image = models.ImageField(upload_to=image_path, null=True)
+    image = models.ImageField(upload_to=image_path, null=True, blank=True)
     name = models.CharField(_("Product Name"), max_length=100)
 
     def get_price(self):

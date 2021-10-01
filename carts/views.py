@@ -246,6 +246,8 @@ class TemplateCartsAPIView(APIView):
                         Cart, user=request.user, status=OPEN
                     ).cart_items.all()
                 }
+                if len(context["cart_items"]) == 0:
+                    raise Http404()
                 return render(request, "cart_detail.html", context)
             except Http404:
                 context = {
@@ -273,10 +275,11 @@ class TemplateCartsAPIView(APIView):
             old_cart_items = cart.cart_items.all()
             product_ids = request.POST.getlist("product")
             product_quantities = request.POST.getlist("quantity")
-
-            for index, item in enumerate(old_cart_items):
-                if int(item.product.id) == int(product_ids[index]):
-                    item.quantity = int(product_quantities[index])
+            for item in old_cart_items:
+                if str(item.product.id) in product_ids:
+                    item.quantity = int(
+                        product_quantities[product_ids.index(str(item.product.id))]
+                    )
                     item.save()
                 else:
                     item.delete()
@@ -284,7 +287,7 @@ class TemplateCartsAPIView(APIView):
                 cart.status = SUBMITTED
                 cart.save()
                 return redirect(HOME_PAGE_URL)
-            return render(request, "cart_detail.html", context)
+            return redirect("/carts/detail")
         context = {"error_message": "You are not logged in. Please log in."}
         return render(request, "cart_detail.html", context)
 

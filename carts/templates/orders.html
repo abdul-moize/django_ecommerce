@@ -20,7 +20,11 @@
                     Order #{{ forloop.counter }}
                         {% for cart_item in cart.cart_items.all %}
                         <div class="order-container">
+                            {% if cart_item.product.image %}
                             <img class="image-field" src={{ cart_item.product.image.url }}>
+                            {% else %}
+                            <img class="image-field" src="/media/product_image.png">
+                            {% endif %}
                             <div class="name-field">{{ cart_item.product.name }}</div>
                             <div class="quantity-field">Quantity: <input style="width: 50px;" readonly value="{{ cart_item.quantity }}"></div>
                         </div>

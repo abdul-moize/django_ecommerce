@@ -2,6 +2,7 @@
 Contains Views for products app
 """
 # pylint: disable=no-self-use, no-member
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 from rest_framework import status, viewsets
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
@@ -35,7 +36,7 @@ class ProductHomePageView(APIView):
         if IsContentManager().has_permission(request, None):
             is_content_manager = True
         context = {
-            "products": Product.objects.all(),
+            "products": Product.objects.filter(~Q(stock_quantity=0)).all(),
             "can_manage_content": is_content_manager,
         }
         return render(request, "homepage.html", context)

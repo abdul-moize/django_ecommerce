@@ -13,14 +13,22 @@
             {% else %}
             <div class="main-message">Cart Details</div>
             <form class="form-box" method="post" action="">
+                {% csrf_token %}
                 {% for cart_item  in cart_items %}
                     <div class="cart-item-box">
-                        <img class="image-tag" src={{ cart_item.product.image.url }}>
+                        {% if cart_item.product.image %}
+                            <img class="image-tag" src={{ cart_item.product.image.url }}>
+                        {% else %}
+                            <img class="image-tag" src="/media/product_image.png">
+                        {% endif %}
                         <div class="name-field">{{ cart_item.product.name }}</div>
-                        {% csrf_token %}
+
                         <input hidden type="number" value={{cart_item.product.id}} name="product">
-                        <input class="quantity-field" type="number" step="1" name="quantity" min="1" max="{{cart_item.product.stock_quantity}}" value="{{cart_item.quantity}}">
-                        <button class="remove-button" type="button" onclick="remove_div({{ cart_item.id }})" >
+                        <input class="quantity-field" type="number" step="1" name="quantity"
+                               min="1"
+                               max="{{cart_item.product.stock_quantity|add:cart_item.quantity}}"
+                               value="{{cart_item.quantity}}">
+                        <button class="remove-button" type="button" onclick="remove_div({{ cart_item.product.id }})" >
                             <img class="remove-image" src="/media/trash.png">
                         </button>
                     </div>
