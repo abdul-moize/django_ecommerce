@@ -283,7 +283,7 @@ class TemplateCartsAPIView(APIView):
                     item.save()
                 else:
                     item.delete()
-            if request.POST["is_checkout"] == "true" and len(product_ids) > 0:
+            if request.POST["is_checkout"] == "True" and len(product_ids) > 0:
                 cart.status = SUBMITTED
                 cart.save()
                 return redirect(HOME_PAGE_URL)

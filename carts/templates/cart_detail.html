@@ -12,7 +12,7 @@
                 {{ error_message }}
             {% else %}
             <div class="main-message">Cart Details</div>
-            <form class="form-box" method="post" action="">
+            <form class="form-box" id="form" method="post" action="">
                 {% csrf_token %}
                 {% for cart_item  in cart_items %}
                     <div class="cart-item-box">
@@ -27,22 +27,14 @@
                         <input class="quantity-field" type="number" step="1" name="quantity"
                                min="1"
                                max="{{cart_item.product.stock_quantity|add:cart_item.quantity}}"
-                               value="{{cart_item.quantity}}">
-                        <button class="remove-button" type="button" onclick="remove_div({{ cart_item.product.id }})" >
+                               value="{{cart_item.quantity}}" onchange="update_cart({{cart_item.product.stock_quantity|add:cart_item.quantity}})">
+                        <button class="remove-button" type="submit" onclick="remove_div({{ cart_item.product.id }})" >
                             <img class="remove-image" src="/media/trash.png">
                         </button>
                     </div>
                 {% endfor %}
-                    <label class="container">
-                        Save Changes
-                        <input type="radio" name="is_checkout" value="false">
-                        <span class="checkmark"></span>
-                    </label>
-                    <label class="container">Checkout
-                        <input type="radio" name="is_checkout" value="true" checked>
-                        <span class="checkmark"></span>
-                    </label>
-                <button class="submit-btn" type="submit" >Submit</button>
+                <input id="checkout" hidden name="is_checkout" value="False">
+                <button class="submit-btn" type="submit" onclick="my_checkout()" >Checkout</button>
             </form>
             {% endif %}
         </div>
