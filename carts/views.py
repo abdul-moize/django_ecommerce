@@ -2,13 +2,16 @@
 Views for carts app
 """
 # pylint: disable= no-self-use, no-member
+from django.db.models import Q
 from django.http import Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import status
-from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from users.contants import HOME_PAGE_URL
 
 from .constants import OPEN, SUBMITTED
 from .serializers import Cart, CartItem, CartItemSerializer, CartSerializer
@@ -154,13 +157,8 @@ class CartsAPIView(APIView):
             data = request.data.copy()
             data["cart"] = cart.id
             cart_item = get_object_or_404(CartItem, pk=item_pk)
-            quantity = cart_item.quantity
             cart_item_serializer = CartItemSerializer(cart_item, data=data)
             if cart_item_serializer.is_valid():
-                cart_item.product.stock_quantity += (
-                    quantity - cart_item_serializer.validated_data["quantity"]
-                )
-                cart_item.product.save()
                 cart_item_serializer.save()
                 return Response(
                     {
@@ -224,3 +222,95 @@ class CartsAPIView(APIView):
                     "status_code": status.HTTP_400_BAD_REQUEST,
                 }
             )
+
+
+class TemplateCartsAPIView(APIView):
+    """
+    Allow the user to view the cart and modify its contents
+    """
+
+    authentication_classes = [SessionAuthentication]
+
+    def get(self, request):
+        """
+        Renders the template containing cart details
+        Args:
+            request(HttpRequest): Value containing request data
+        Returns:
+            (render): Value containing template data to display
+        """
+        if request.user.is_authenticated:
+            try:
+                context = {
+                    "cart_items": get_object_or_404(
+                        Cart, user=request.user, status=OPEN
+                    ).cart_items.all()
+                }
+                if len(context["cart_items"]) == 0:
+                    raise Http404()
+                return render(request, "cart_detail.html", context)
+            except Http404:
+                context = {
+                    "error_message": "Your cart is empty. Please add products to cart."
+                }
+                return render(request, "cart_detail.html", context)
+        context = {"error_message": "You are not logged in. Please Log in."}
+        return render(request, "cart_detail.html", context)
+
+    def post(self, request):
+        """
+        Allows the user to submit or change cart details
+        Args:
+            request(HttpRequest): Value containing request data
+        Returns:
+            (render): Value containing template data to display
+        """
+        if request.user.is_authenticated:
+            context = {
+                "cart_items": get_object_or_404(
+                    Cart, user=request.user, status=OPEN
+                ).cart_items.all()
+            }
+            cart = get_object_or_404(Cart, user=request.user, status=OPEN)
+            old_cart_items = cart.cart_items.all()
+            product_ids = request.POST.getlist("product")
+            product_quantities = request.POST.getlist("quantity")
+            for item in old_cart_items:
+                if str(item.product.id) in product_ids:
+                    item.quantity = int(
+                        product_quantities[product_ids.index(str(item.product.id))]
+                    )
+                    item.save()
+                else:
+                    item.delete()
+            if request.POST["is_checkout"] == "True" and len(product_ids) > 0:
+                cart.status = SUBMITTED
+                cart.save()
+                return redirect(HOME_PAGE_URL)
+            return redirect("/carts/detail")
+        context = {"error_message": "You are not logged in. Please log in."}
+        return render(request, "cart_detail.html", context)
+
+
+class TemplateViewCarts(APIView):
+    """
+    Allows the users to see his order history
+    """
+
+    authentication_classes = [SessionAuthentication]
+
+    def get(self, request):
+        """
+        Renders a page containing previous orders of the user
+        Args:
+            request(HttpRequest): Value containing request data
+        Returns:
+            (render): Value containing template data to display
+        """
+
+        carts = Cart.objects.filter(~Q(status=OPEN), user=request.user)
+        if carts.exists():
+            context = {"carts": carts}
+            return render(request, "orders.html", context)
+        context = {"error_message": "You do not have any previous orders"}
+        return render(request, "orders.html", context)

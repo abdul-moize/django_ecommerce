@@ -74,6 +74,30 @@ class CartItem(AuditTimeStamp):
         super().delete(*args, **kwargs)
         cart.update_bill()
 
+    def update_product_quantity(self, new_quantity):
+        """
+        Updates the stock quantity of the product
+        Args:
+            new_quantity(int): Value containing new quantity
+        Returns:
+            None
+        """
+        # pylint: disable=no-member
+        old_quantity = 0
+        if self.id is not None:
+            old_quantity = CartItem.objects.get(id=self.id).quantity
+        self.product.stock_quantity += old_quantity - new_quantity
+        self.product.save()
+
+    def update_total(self):
+        """
+        Updates the item total field
+        Returns:
+            None
+        """
+        # pylint: disable=no-member
+        self.item_total = Decimal(self.quantity) * self.product.price
+
     def save(self, *args, **kwargs):
         """
         Updates bill whenever an item is updated
@@ -84,7 +108,8 @@ class CartItem(AuditTimeStamp):
             None
         """
         # pylint: disable=no-member
-        self.item_total = Decimal(self.quantity) * self.product.price
+        self.update_product_quantity(self.quantity)
+        self.update_total()
         super().save(*args, **kwargs)
         self.cart.update_bill()
 

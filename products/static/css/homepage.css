@@ -7,9 +7,12 @@ body{
         }
         .products-container{
             background: white;
+
         }
         .products-box{
             display: flex;
+            align-items: center;
+            justify-content: center;
             text-decoration-line: none;
             background: white;
         }
