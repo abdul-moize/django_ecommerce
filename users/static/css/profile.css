@@ -1,0 +1,71 @@
+.main-box{
+    width: 60%;
+    height: 500px;
+    margin: auto;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: url("/static/images/banner.jpg");
+    border-radius: 10px;
+}
+.form-box{
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.input-field{
+    margin: 10px;
+    width: 70%;
+    padding: 10px;
+    font-size: 20px;
+    border-top: 0;
+    border-left: 0;
+    outline: none;
+}
+.submit-btn{
+    margin: 10px;
+    margin-top: 40px;
+    width: 50%;
+    padding: 10px;
+    font-size: 20px;
+    border-radius: 20px;
+    border: 0;
+    background: linear-gradient(to right, yellow, red);
+    cursor: pointer;
+    color: wheat;
+}
+.row{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+.labels{
+    width: 30%;
+    text-align: left;
+    font-size: 20px;
+}
+.main-message{
+    color: wheat;
+    text-align: center;
+    min-width: 30%;
+    height: 60px;
+    font-size: 40px;
+    margin: 10px;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to right, yellow, red);
+}
+.error{
+    width: 70%;
+    margin-left: 10px;
+    text-align: left;
+    color: red;
+}
