@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+{% extends "header.html" %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+    <style>
+        .main-box{
+            width: 60%;
+            height: 500px;
+            margin: auto;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: url("/static/images/banner.jpg");
+            border-radius: 10px;
+        }
+        .form-box{
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .input-field{
+            margin: 10px;
+            width: 70%;
+            padding: 10px;
+            font-size: 20px;
+            border-top: 0;
+            border-left: 0;
+            outline: none;
+        }
+        .submit-btn{
+            margin: 10px;
+            margin-top: 40px;
+            width: 50%;
+            padding: 10px;
+            font-size: 20px;
+            border-radius: 20px;
+            border: 0;
+            background: linear-gradient(to right, yellow, red);
+            cursor: pointer;
+            color: wheat;
+        }
+        .row{
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+        .labels{
+            width: 30%;
+            text-align: left;
+            font-size: 20px;
+        }
+        .main-message{
+            color: wheat;
+            text-align: center;
+            min-width: 30%;
+            height: 60px;
+            font-size: 40px;
+            margin: 10px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to right, yellow, red);
+        }
+        .error{
+            width: 70%;
+            margin-left: 10px;
+            text-align: left;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+  <div class="main-box">
+      {% if error_message %}
+        <div>{{ error_message }}</div>
+      {% else %}
+          <div class="main-message">{% if message %} {{ message }} {% else %} Profile {% endif %}</div>
+          <form class="form-box" method="post" action="">
+              {% csrf_token %}
+              <div class="row">
+                  <div class="labels">Name:</div>
+                  <input type="text" name="name" class="input-field" value="{{ user.name }}" placeholder="Enter New Name" required>
+              </div>
+              {% if name_error %}
+                <div class="row">
+                    <div class="labels"></div>
+                    <li class="error">{{name_error}}</li><br>
+                </div>
+                {% endif %}
+              <div class="row">
+                  <div class="labels">Email:</div>
+                  <input type="text" name="email" class="input-field" value={{ user.email }} placeholder="Enter New email" required>
+              </div>
+              {% if email_error %}
+                <div class="row">
+                    <div class="labels"></div>
+                    <li class="error">{{email_error}}</li><br>
+                </div>
+              {% endif %}
+              <div class="row">
+                  <div class="labels">Password:</div>
+                  <input type="password" name="password" class="input-field" placeholder="Enter New password" value="">
+              </div>
+              {% for msg in password_error %}
+                <div class="row">
+                    <div class="labels"></div>
+                    <li class="error">{{ msg }} <br></li>
+                </div>
+
+              {% endfor %}
+              <button type="submit" class="submit-btn">Save Changes</button>
+          </form>
+      {% endif %}
+  </div>
+</body>
+{% endblock %}
