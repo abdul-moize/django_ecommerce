@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+{% extends "header.html" %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+
+    <link rel="stylesheet" href="/static/css/profile.css">
+</head>
+<body>
+  <div class="main-box">
+      {% if error_message %}
+        <div>{{ error_message }}</div>
+      {% else %}
+          <div class="main-message">{% if message %} {{ message }} {% else %} Profile {% endif %}</div>
+          <form class="form-box" method="post" action="">
+              {% csrf_token %}
+              <div class="row">
+                  <div class="labels">Name:</div>
+                  <input type="text" name="name" class="input-field" value="{{ user.name }}" placeholder="Enter New Name" required>
+              </div>
+              {% if name_error %}
+                <div class="row">
+                    <div class="labels"></div>
+                    <li class="error">{{name_error}}</li><br>
+                </div>
+                {% endif %}
+              <div class="row">
+                  <div class="labels">Email:</div>
+                  <input type="text" name="email" class="input-field" value={{ user.email }} placeholder="Enter New email" required>
+              </div>
+              {% if email_error %}
+                <div class="row">
+                    <div class="labels"></div>
+                    <li class="error">{{email_error}}</li><br>
+                </div>
+              {% endif %}
+              <div class="row">
+                  <div class="labels">Password:</div>
+                  <input type="password" name="password" class="input-field" placeholder="Enter New password" value="">
+              </div>
+              {% for msg in password_error %}
+                <div class="row">
+                    <div class="labels"></div>
+                    <li class="error">{{ msg }} <br></li>
+                </div>
+
+              {% endfor %}
+              <button type="submit" class="submit-btn">Save Changes</button>
+          </form>
+      {% endif %}
+  </div>
+</body>
+{% endblock %}

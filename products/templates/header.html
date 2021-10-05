@@ -14,7 +14,7 @@
         <a href={% url 'orders' %}>Orders</a>
         <a style="padding: 0px;" href={% url 'cart' %}><img width="40" src="/media/cart_image.png"></a>
         {% if added_to_cart %} <div id="message" class="bubble bubble-top-right">Product added to cart</div> {% endif %}
-        <a href="">Profile</a>
+        <a href={% url "profile" %}>Profile</a>
         <a href={% url 'logout' %}>Log Out</a>
     {% else %}
         <a href={% url 'template_login' %}>Log In</a>

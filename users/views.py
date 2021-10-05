@@ -33,6 +33,60 @@ def logout_user(request):
     return redirect(HOME_PAGE_URL)
 
 
+class ProfileAPIView(APIView):
+    """
+    Allows the user to see and update his profile
+    """
+
+    authentication_classes = [SessionAuthentication]
+
+    def get(self, request):
+        """
+        Renders the user profile
+        Args:
+            request(HttpRequest): Value containing request data
+        Returns:
+            (render): Value containing template data to display
+        """
+        if request.user.is_authenticated:
+            context = {"user": User.objects.get(id=request.user.id)}
+            return render(request, "profile.html", context)
+        context = {"error_message": "You are not logged in. Please login."}
+        return render(request, "profile.html", context)
+
+    def post(self, request):
+        """
+        Updates the user profile
+        Args:
+            request(HttpRequest): Value containing request data
+        Returns:
+            (render): Value containing template data to display
+        """
+        if request.user.is_authenticated:
+            data = request.data.copy()
+            if "password" in data and data["password"] == "":
+                del data["password"]
+            if "name" in data and data["name"] == "":
+                del data["name"]
+            if "email" in data and data["email"] == "":
+                del data["email"]
+            serializer = UserSerializer(request.user, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                context = {"message": "Changes Saved Successfully."}
+                return render(request, "profile.html", context)
+            errors = serializer.errors
+            context = {}
+            if "email" in errors:
+                context["email_error"] = ", ".join(errors["email"])
+            if "name" in errors:
+                context["name_error"] = ", ".join(errors["name"])
+            if "password" in errors:
+                context["password_error"] = errors["password"]
+            return render(request, "profile.html", context)
+        return redirect(HOME_PAGE_URL)
+
+
 class TemplateUserLogin(APIView):
     """
     Displays login page and allows user to login
