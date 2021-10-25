@@ -136,7 +136,12 @@ class ProductViewSet(viewsets.ModelViewSet):
     # pylint: disable =invalid-name
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
-    authentication_classes = [TokenAuthentication]
+
+    def get_authenticators(self):
+        authentication_classes = []
+        if self.request.method != "GET":
+            authentication_classes = [TokenAuthentication]
+        return [authentication() for authentication in authentication_classes]
 
     def get_permissions(self):
         """

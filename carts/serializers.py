@@ -5,27 +5,26 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from carts.models import Cart, CartItem
-
-
-class CartSerializer(serializers.ModelSerializer):
-    """
-    Cart model serializer
-    """
-
-    class Meta:
-        """
-        Tells the fields to include in parsed/json object
-        """
-
-        # pylint: disable=protected-access, no-member
-        model = Cart
-        fields = "__all__"
+from products.serializers import ProductSerializer
 
 
 class CartItemSerializer(serializers.ModelSerializer):
     """
     CartItem model serializer
     """
+
+    product_data = serializers.SerializerMethodField()
+    # pylint: disable=no-self-use
+
+    def get_product_data(self, obj):
+        """
+        Returns serialized data of product
+        Args:
+            obj(Cart Item):  Value containing cart item data
+        Returns:
+            (dict): Value containing product data
+        """
+        return ProductSerializer(instance=obj.product).data
 
     def create(self, validated_data):
         """
@@ -64,4 +63,21 @@ class CartItemSerializer(serializers.ModelSerializer):
         """
 
         model = CartItem
+        fields = "__all__"
+
+
+class CartSerializer(serializers.ModelSerializer):
+    """
+    Cart model serializer
+    """
+
+    cart_items = CartItemSerializer(many=True)
+
+    class Meta:
+        """
+        Tells the fields to include in parsed/json object
+        """
+
+        # pylint: disable=protected-access, no-member
+        model = Cart
         fields = "__all__"

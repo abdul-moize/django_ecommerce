@@ -49,7 +49,9 @@ class CartItem(AuditTimeStamp):
     Model class that represents a CartItem
     """
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="+")
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="something"
+    )
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_items")
     quantity = models.PositiveIntegerField(
         _("Product quantity to buy"), default=1, validators=(MinValueValidator(1),)

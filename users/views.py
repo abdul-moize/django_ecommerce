@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import status
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -189,6 +189,7 @@ class UserAuthenticationAPIView(APIView):
                     "token": token[0].key,
                     "email": user.email,
                     "name": user.name,
+                    "role": user.role.code,
                 }
             else:
                 response = {
@@ -206,7 +207,7 @@ class UserAuthenticationAPIView(APIView):
                 "status_code": status.HTTP_400_BAD_REQUEST,
             }
 
-        return Response(response)
+        return Response(response, status=response["status_code"])
 
 
 class UserAPIView(APIView):
@@ -218,8 +219,24 @@ class UserAPIView(APIView):
     delete to remove user
     """
 
-    # authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication]
     # permission_classes = [IsAdmin]
+
+    def get(self, request):
+        """
+        This function returns data of the user
+        Args:
+            request(HttpRequest): Value containing request data
+        Returns:
+            (dict): Value containing User data
+        """
+        if request.user.is_authenticated:
+            return Response(
+                UserSerializer(request.user).data, status=status.HTTP_200_OK
+            )
+        return Response(
+            {"message": "Please log in first"}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     def post(self, request):
         """
@@ -239,19 +256,21 @@ class UserAPIView(APIView):
                         "message": "User created successfully.",
                         "status_code": status.HTTP_201_CREATED,
                         "user_data": serializer.data,
-                    }
+                    },
+                    status=status.HTTP_201_CREATED,
                 )
             return Response(
                 {
                     "message": serializer.errors,
                     "status_code": status.HTTP_400_BAD_REQUEST,
-                }
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
         except ValidationError as validation_error:
             response["message"] = " ".join(validation_error)
             response["status_code"] = status.HTTP_400_BAD_REQUEST
 
-        return Response(response)
+        return Response(response, status=response["status_code"])
 
     def patch(self, request):
         """
@@ -261,6 +280,7 @@ class UserAPIView(APIView):
         Returns:
             (Response): A json object containing message and code
         """
+
         if request.user.is_authenticated:
             try:
                 serializer = UserSerializer(
@@ -273,7 +293,8 @@ class UserAPIView(APIView):
                             "message": "Changes updated successfully",
                             "status_code": status.HTTP_200_OK,
                             "new_data": serializer.data,
-                        }
+                        },
+                        status=status.HTTP_200_OK,
                     )
 
                 return Response(
@@ -281,20 +302,23 @@ class UserAPIView(APIView):
                         "message": serializer.errors,
                         "status_code": status.HTTP_400_BAD_REQUEST,
                         "data": serializer.data,
-                    }
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
             except ValidationError as error:
                 return Response(
                     {
                         "message": " ".join(error),
                         "status_code": status.HTTP_400_BAD_REQUEST,
-                    }
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
         return Response(
             {
                 "message": "No token provided in headers.",
                 "status_code": status.HTTP_400_BAD_REQUEST,
-            }
+            },
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     def delete(self, request):
@@ -320,4 +344,4 @@ class UserAPIView(APIView):
             response["message"] = "You don't have permission to delete user"
             response["status_code"] = status.HTTP_403_FORBIDDEN
 
-        return Response(response)
+        return Response(response, status=response["status_code"])

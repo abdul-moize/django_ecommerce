@@ -11,6 +11,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from products.models import Product
+from products.serializers import ProductSerializer
 from users.contants import HOME_PAGE_URL
 
 from .constants import OPEN, SUBMITTED
@@ -60,7 +62,8 @@ class CartsAPIView(APIView):
                 "message": "There was a problem adding to cart",
                 "status_code": status.HTTP_400_BAD_REQUEST,
                 "errors": serializer.errors,
-            }
+            },
+            status=status.HTTP_200_OK,
         )
 
     def get(self, request, item_pk=None):
@@ -73,7 +76,6 @@ class CartsAPIView(APIView):
             (Response): Value containing information about operation status
         """
         try:
-            carts = Cart.objects.filter(user=request.user)
             if item_pk:
                 cart = get_object_or_404(Cart, user=request.user, pk=item_pk)
                 return Response(
@@ -86,19 +88,52 @@ class CartsAPIView(APIView):
                         "status_code": status.HTTP_200_OK,
                     }
                 )
+            cart = Cart.objects.filter(user=request.user, status=OPEN)
+            cart_items = []
+            if cart.exists():
+                cart = cart.get()
+                cart_items = CartItemSerializer(
+                    cart.cart_items.all(),
+                    many=True,
+                ).data
+
+                for item in cart_items:
+                    item["product"] = ProductSerializer(
+                        get_object_or_404(Product, id=item["product"])
+                    ).data
+                return Response(
+                    {
+                        "message": "Items retrieved successfully.",
+                        "orders": CartSerializer(
+                            Cart.objects.filter(~Q(status=OPEN), user=request.user),
+                            many=True,
+                        ).data,
+                        "cart_detail": CartSerializer(cart).data,
+                        "cart_items": cart_items,
+                        "status_code": status.HTTP_200_OK,
+                    },
+                    status=status.HTTP_200_OK,
+                )
             return Response(
                 {
                     "message": "Items retrieved successfully.",
-                    "cart_details": CartSerializer(carts, many=True).data,
+                    "orders": CartSerializer(
+                        Cart.objects.filter(~Q(status=OPEN), user=request.user),
+                        many=True,
+                    ).data,
+                    "cart_detail": {},
+                    "cart_items": [],
                     "status_code": status.HTTP_200_OK,
-                }
+                },
+                status=status.HTTP_200_OK,
             )
         except Http404:
             return Response(
                 {
                     "message": "Such cart does not exist",
                     "status_code": status.HTTP_400_BAD_REQUEST,
-                }
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
     def patch(self, request):
@@ -132,7 +167,11 @@ class CartsAPIView(APIView):
                         }
                     )
             return Response(
-                {"message": "Cart is empty", "status_code": status.HTTP_400_BAD_REQUEST}
+                {
+                    "message": "Cart is empty",
+                    "status_code": status.HTTP_400_BAD_REQUEST,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         except Http404:
@@ -140,7 +179,8 @@ class CartsAPIView(APIView):
                 {
                     "message": "Such cart does not exist",
                     "status_code": status.HTTP_400_BAD_REQUEST,
-                }
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
     def put(self, request, item_pk):
@@ -229,7 +269,7 @@ class TemplateCartsAPIView(APIView):
     Allow the user to view the cart and modify its contents
     """
 
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
 
     def get(self, request):
         """
@@ -287,6 +327,7 @@ class TemplateCartsAPIView(APIView):
                 cart.status = SUBMITTED
                 cart.save()
                 return redirect(HOME_PAGE_URL)
+
             return redirect("/carts/detail")
         context = {"error_message": "You are not logged in. Please log in."}
         return render(request, "cart_detail.html", context)
